@@ -244,6 +244,14 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
           Google Drive connected! Guest uploads will go directly to your selected Drive folder.
         </div>
+        <div id="refreshTokenBox" class="alert alert-info" style="flex-direction:column;align-items:flex-start;gap:.5rem">
+          <div style="display:flex;align-items:center;gap:.5rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong>One more step — save your refresh token to Netlify</strong></div>
+          <p style="font-size:.8rem;margin:0">So guests can upload without you being logged in, add this as a Netlify environment variable:</p>
+          <div style="background:var(--white);border:1px solid #b3d9f5;padding:.5rem .75rem;font-family:monospace;font-size:.75rem;word-break:break-all;width:100%">
+            GOOGLE_REFRESH_TOKEN = <span id="refreshTokenDisplay" style="color:#1a6090">connecting...</span>
+          </div>
+          <p style="font-size:.78rem;margin:0">Go to Netlify → Site Settings → Environment Variables → add this → then redeploy via GitHub Desktop.</p>
+        </div>
         <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:400;margin-bottom:.75rem">Select or create a wedding album</h4>
         <div style="display:flex;gap:.75rem;margin-bottom:1rem;align-items:flex-end;flex-wrap:wrap">
           <div class="form-group" style="flex:1;margin:0"><label>New album name</label><input id="newAlbumName" placeholder="Alexandra & James Wedding 2025"></div>
@@ -442,7 +450,10 @@ function updateGoogleUI(){
   document.getElementById('googleStatusText').textContent=ok?'Connected':'Not connected';
   document.getElementById('step-setup').style.display=ok?'none':'block';
   document.getElementById('step-connected').style.display=ok?'block':'none';
-  if(ok)loadAlbums();
+  if(ok){loadAlbums();
+    const el=document.getElementById('refreshTokenDisplay');
+    if(el&&S.refreshToken)el.textContent=S.refreshToken;
+  }
 }
 function startOAuth(){
   if(!S.clientId){toast('Enter your Client ID first',true);return;}
@@ -466,7 +477,10 @@ async function handleOAuthCallback(){
     if(r.error){toast('Auth error: '+r.error,true);return;}
     S.accessToken=r.access_token;S.refreshToken=r.refresh_token;
     S.tokenExpiry=Date.now()+(r.expires_in*1000);S.googleConnected=true;
-    saveS();updateGoogleUI();toast('Google Photos connected!');
+    saveS();updateGoogleUI();toast('Google Drive connected!');
+    // Show refresh token so user can save it to Netlify
+    const el=document.getElementById('refreshTokenDisplay');
+    if(el)el.textContent=r.refresh_token||'(not returned — may already be saved)';
   }catch(e){toast('Failed: '+e.message,true);}
 }
 async function ensureToken(){

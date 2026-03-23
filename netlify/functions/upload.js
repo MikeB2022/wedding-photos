@@ -17,6 +17,31 @@ function driveRequest(options, body) {
   });
 }
 
+async function refreshToken(refresh_token) {
+  const body = new URLSearchParams({
+    refresh_token,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    grant_type: 'refresh_token'
+  }).toString();
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'oauth2.googleapis.com',
+      path: '/token',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) }
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve({}); } });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 async function findOrCreateFolder(access_token, folderName) {
   const query = encodeURIComponent(`name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
   const searchRes = await driveRequest({
@@ -42,11 +67,24 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
   try {
-    const { access_token, folder_name, filename, mimetype, data: base64data, guest_name, table } = JSON.parse(event.body || '{}');
-    if (!access_token || !base64data) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
+    const { folder_name, filename, mimetype, data: base64data, guest_name, table } = JSON.parse(event.body || '{}');
+
+    if (!base64data) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing photo data' }) };
+
+    // Get access token by refreshing from stored refresh token in env
+    const storedRefreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+    if (!storedRefreshToken) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'No refresh token configured. Please save your token in Netlify environment variables.' }) };
+    }
+
+    const tokenData = await refreshToken(storedRefreshToken);
+    if (!tokenData.access_token) {
+      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Could not refresh access token', detail: tokenData }) };
+    }
+    const access_token = tokenData.access_token;
 
     const folderId = await findOrCreateFolder(access_token, folder_name || 'Wedding Photos');
-    const safeFilename = filename || 'wedding-photo.jpg';
+    const safeFilename = filename || `wedding-photo-${Date.now()}.jpg`;
     const safeMime = mimetype || 'image/jpeg';
     const description = [guest_name ? `From: ${guest_name}` : 'Wedding guest', table ? `Table ${table}` : ''].filter(Boolean).join(' · ');
 
@@ -79,6 +117,7 @@ exports.handler = async (event) => {
 
     if (uploadRes.status !== 200) return { statusCode: uploadRes.status, headers, body: JSON.stringify({ error: 'Upload failed', detail: uploadRes.data }) };
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, file: uploadRes.data }) };
+
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
