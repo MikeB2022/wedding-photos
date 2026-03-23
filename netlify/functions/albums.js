@@ -66,7 +66,9 @@ exports.handler = async (event) => {
     if (action === 'create') {
       if (!album_title) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing album_title' }) };
       const data = await googlePost('/v1/albums', access_token, { album: { title: album_title } });
-      return { statusCode: 200, headers, body: JSON.stringify({ album: data }) };
+      if (data.error) return { statusCode: 400, headers, body: JSON.stringify({ error: data.error.message || JSON.stringify(data.error) }) };
+      // Return both top-level and nested so frontend can handle either
+      return { statusCode: 200, headers, body: JSON.stringify({ album: data, id: data.id, title: data.title }) };
     }
 
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action' }) };

@@ -505,9 +505,16 @@ async function createAlbum(){
   const title=document.getElementById('newAlbumName').value.trim();
   if(!title){toast('Enter an album name',true);return;}
   const token=await ensureToken();if(!token){toast('Not connected',true);return;}
-  const r=await api('/api/albums',{access_token:token,action:'create',album_title:title});
-  if(r.error){toast('Error: '+r.error,true);return;}
-  selectAlbum(r.album.id,r.album.title);toast('Album created!');loadAlbums();
+  try{
+    const r=await api('/api/albums',{access_token:token,action:'create',album_title:title});
+    if(r.error){toast('Error: '+r.error,true);return;}
+    // Google Photos API returns album directly, may also be nested under r.album
+    const album=r.album||r;
+    if(!album.id){toast('Could not get album ID — try again',true);console.error('Album response:',r);return;}
+    selectAlbum(album.id,album.title||title);
+    toast('Album "'+title+'" created!');
+    loadAlbums();
+  }catch(e){toast('Failed: '+e.message,true);}
 }
 function selectAlbum(id,title){
   S.albumId=id;S.albumTitle=title;saveS();showSelectedAlbum();
