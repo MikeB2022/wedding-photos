@@ -431,7 +431,19 @@ footer strong{color:var(--gold)}
   <div class="section-head">
     <div class="section-eyebrow">Live updates</div>
     <h2 class="section-title">Guest <em>gallery</em></h2>
-    <p class="section-body">All photos guests share appear here in real time. Click any photo to view it full size.</p>
+    <p class="section-body">All photos guests share appear here. Share the gallery link so everyone can browse together.</p>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">Share the <em>gallery</em></div>
+    <p style="font-size:.83rem;color:var(--slate3);line-height:1.7;margin-bottom:1rem">Send this link to all your guests so they can view and browse every photo on their phone or laptop.</p>
+    <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;background:var(--sand);border:1px solid var(--sand3);border-radius:var(--radius);padding:.65rem .9rem;font-family:monospace;font-size:.75rem;color:var(--slate);word-break:break-all;min-width:200px" id="galleryUrlDisplay">Save your Netlify URL first</div>
+      <button class="btn btn-gold" onclick="copyGalleryUrl()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy link
+      </button>
+      <a class="btn btn-outline" id="openGalleryBtn" href="#" target="_blank">Open ↗</a>
+    </div>
   </div>
   <div class="card" style="padding-bottom:1rem">
     <div class="gallery-toolbar">
@@ -512,7 +524,7 @@ function saveConfig(){
 }
 function saveSiteUrl(){
   S.siteUrl=qs('siteUrl').value.replace(/\/$/,'');
-  ss();updateQR();
+  ss();updateQR();updateGalleryLink();
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
   toast('URL saved!');
 }
@@ -530,6 +542,25 @@ function updateHero(){
 }
 
 // ─── QR ─────────────────────────────────────────────
+function buildGalleryUrl(){
+  if(!S.siteUrl||!S.folderId)return null;
+  const p=new URLSearchParams({fid:S.folderId,fname:S.folderName,n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue});
+  return S.siteUrl+'/gallery.html?'+p.toString();
+}
+function updateGalleryLink(){
+  const url=buildGalleryUrl();
+  const display=qs('galleryUrlDisplay');
+  const openBtn=qs('openGalleryBtn');
+  if(url&&display){display.textContent=url;if(openBtn)openBtn.href=url;}
+  else if(display){display.textContent='Select a Drive folder to generate link';}
+}
+function copyGalleryUrl(){
+  const url=buildGalleryUrl();
+  if(!url){toast('Set your Netlify URL and select a folder first',true);return;}
+  navigator.clipboard.writeText(url).then(()=>toast('Gallery link copied!')).catch(()=>{
+    const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Gallery link copied!');
+  });
+}
 function buildUploadUrl(table){
   const base=S.siteUrl||window.location.origin;
   const p=new URLSearchParams({table,n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue,msg:S.msg});
@@ -661,7 +692,7 @@ function selectFolder(id,name){
   document.querySelectorAll('.folder-item').forEach(el=>{
     if(el.querySelector('.folder-name')?.textContent===name)el.classList.add('selected');
   });
-  updateQR();
+  updateQR();updateGalleryLink();
   const link=qs('driveFolderLink');
   if(link){link.href=`https://drive.google.com/drive/folders/${id}`;link.style.display='inline-flex';}
   toast('Folder selected: '+name);
@@ -725,7 +756,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   qs('siteUrl').value=S.siteUrl;qs('clientId').value=S.clientId;
   qs('clientSecret').value=S.clientSecret;
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  updateHero();renderTables();updateQR();updateDriveUI();handleCallback();
+  updateHero();renderTables();updateQR();updateDriveUI();handleCallback();updateGalleryLink();
   // Auto-load gallery if connected
   if(S.googleConnected&&S.folderId)loadGallery();
 });
