@@ -44,7 +44,7 @@ exports.handler = async (event) => {
   try {
     if (action === 'list_folders') {
       const q = encodeURIComponent(`mimeType='application/vnd.google-apps.folder' and trashed=false`);
-      const r = await driveGet(`/drive/v3/files?q=${q}&fields=files(id,name)&orderBy=name&pageSize=50`, token);
+      const r = await driveGet(`/drive/v3/files?q=${q}&fields=files(id%2Cname)&orderBy=name&pageSize=50`, token);
       return { statusCode: 200, headers: cors, body: JSON.stringify({ folders: r.files || [] }) };
     }
 
@@ -58,7 +58,8 @@ exports.handler = async (event) => {
     if (action === 'list_photos') {
       if (!folder_id) return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Missing folder_id' }) };
       const q = encodeURIComponent(`'${folder_id}' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')`);
-      const r = await driveGet(`/drive/v3/files?q=${q}&fields=files(id,name,description,thumbnailLink,webViewLink,mimeType,createdTime)&orderBy=createdTime desc&pageSize=100`, token);
+      const fields = 'files(id%2Cname%2Cdescription%2CthumbnailLink%2CwebViewLink%2CmimeType%2CcreatedTime)';
+      const r = await driveGet(`/drive/v3/files?q=${q}&fields=${fields}&orderBy=createdTime+desc&pageSize=100`, token);
       return { statusCode: 200, headers: cors, body: JSON.stringify({ photos: r.files || [] }) };
     }
 
