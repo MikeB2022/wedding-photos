@@ -1,15 +1,14 @@
 const https = require('https');
 
-function googleRequest(options, body) {
+function driveRequest(options, body) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, res => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
       res.on('end', () => {
-        const raw = Buffer.concat(chunks);
-        const text = raw.toString();
-        try { resolve({ status: res.statusCode, data: JSON.parse(text) }); }
-        catch { resolve({ status: res.statusCode, data: text }); }
+        const raw = Buffer.concat(chunks).toString();
+        try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
+        catch { resolve({ status: res.statusCode, data: raw }); }
       });
     });
     req.on('error', reject);
@@ -18,87 +17,68 @@ function googleRequest(options, body) {
   });
 }
 
-exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
+async function findOrCreateFolder(access_token, folderName) {
+  const query = encodeURIComponent(`name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const searchRes = await driveRequest({
+    hostname: 'www.googleapis.com',
+    path: `/drive/v3/files?q=${query}&fields=files(id,name)`,
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${access_token}` }
+  });
+  if (searchRes.data.files && searchRes.data.files.length > 0) return searchRes.data.files[0].id;
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
+  const meta = JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' });
+  const createRes = await driveRequest({
+    hostname: 'www.googleapis.com',
+    path: '/drive/v3/files?fields=id,name',
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(meta) }
+  }, meta);
+  return createRes.data.id;
+}
+
+exports.handler = async (event) => {
+  const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Content-Type': 'application/json' };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
   try {
-    const { access_token, album_id, filename, mimetype, data: base64data, guest_name, table } = JSON.parse(event.body || '{}');
+    const { access_token, folder_name, filename, mimetype, data: base64data, guest_name, table } = JSON.parse(event.body || '{}');
+    if (!access_token || !base64data) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
 
-    if (!access_token || !base64data) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
-    }
+    const folderId = await findOrCreateFolder(access_token, folder_name || 'Wedding Photos');
+    const safeFilename = filename || 'wedding-photo.jpg';
+    const safeMime = mimetype || 'image/jpeg';
+    const description = [guest_name ? `From: ${guest_name}` : 'Wedding guest', table ? `Table ${table}` : ''].filter(Boolean).join(' · ');
 
-    // Step 1: Upload raw bytes to get an upload token
-    const imageBuffer = Buffer.from(base64data, 'base64');
-    const uploadRes = await googleRequest({
-      hostname: 'photoslibrary.googleapis.com',
-      path: '/v1/uploads',
+    const metadata = JSON.stringify({ name: safeFilename, description, parents: [folderId] });
+    const boundary = 'wedding_boundary_x1';
+    const body = [
+      `--${boundary}`,
+      'Content-Type: application/json; charset=UTF-8',
+      '',
+      metadata,
+      `--${boundary}`,
+      `Content-Type: ${safeMime}`,
+      'Content-Transfer-Encoding: base64',
+      '',
+      base64data,
+      `--${boundary}--`
+    ].join('\r\n');
+
+    const bodyBuffer = Buffer.from(body);
+    const uploadRes = await driveRequest({
+      hostname: 'www.googleapis.com',
+      path: '/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${access_token}`,
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': imageBuffer.length,
-        'X-Goog-Upload-Protocol': 'raw',
-        'X-Goog-Upload-File-Name': filename || 'wedding-photo.jpg'
+        'Content-Type': `multipart/related; boundary=${boundary}`,
+        'Content-Length': bodyBuffer.length
       }
-    }, imageBuffer);
+    }, bodyBuffer);
 
-    const uploadToken = typeof uploadRes.data === 'string' ? uploadRes.data : uploadRes.data?.uploadToken;
-
-    if (!uploadToken) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to get upload token', detail: uploadRes.data }) };
-    }
-
-    // Step 2: Create media item in the album
-    const description = [
-      guest_name ? `From: ${guest_name}` : 'Wedding guest',
-      table ? `Table ${table}` : ''
-    ].filter(Boolean).join(' · ');
-
-    const createBody = {
-      newMediaItems: [{
-        description,
-        simpleMediaItem: { uploadToken, fileName: filename || 'wedding-photo.jpg' }
-      }]
-    };
-
-    if (album_id) createBody.albumId = album_id;
-
-    const bodyStr = JSON.stringify(createBody);
-    const createRes = await googleRequest({
-      hostname: 'photoslibrary.googleapis.com',
-      path: '/v1/mediaItems:batchCreate',
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${access_token}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(bodyStr)
-      }
-    }, bodyStr);
-
-    if (createRes.status !== 200) {
-      return { statusCode: createRes.status, headers, body: JSON.stringify({ error: 'Failed to create media item', detail: createRes.data }) };
-    }
-
-    const item = createRes.data?.newMediaItemResults?.[0];
-    if (item?.status?.message && item.status.message !== 'Success') {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: item.status.message }) };
-    }
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ success: true, mediaItem: item?.mediaItem })
-    };
-
+    if (uploadRes.status !== 200) return { statusCode: uploadRes.status, headers, body: JSON.stringify({ error: 'Upload failed', detail: uploadRes.data }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ success: true, file: uploadRes.data }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }

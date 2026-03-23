@@ -242,7 +242,7 @@
       <div id="step-connected" style="display:none">
         <div class="alert alert-success">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
-          Google Photos connected! Guest uploads will go directly to your selected album.
+          Google Drive connected! Guest uploads will go directly to your selected Drive folder.
         </div>
         <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:400;margin-bottom:.75rem">Select or create a wedding album</h4>
         <div style="display:flex;gap:.75rem;margin-bottom:1rem;align-items:flex-end;flex-wrap:wrap">
@@ -450,7 +450,7 @@ function startOAuth(){
   const redirectUri=S.siteUrl+'/';
   const params=new URLSearchParams({
     client_id:S.clientId,redirect_uri:redirectUri,response_type:'code',
-    scope:'https://www.googleapis.com/auth/photoslibrary',
+    scope:'https://www.googleapis.com/auth/drive.file',
     access_type:'offline',prompt:'consent'
   });
   window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
@@ -487,32 +487,31 @@ function disconnectGoogle(){
 async function loadAlbums(){
   const token=await ensureToken();if(!token)return;
   const grid=document.getElementById('albumGrid');
-  grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">Loading…</div>';
+  grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">Loading Drive folders…</div>';
   const r=await api('/api/albums',{access_token:token,action:'list'});
   if(r.error){grid.innerHTML='<div style="font-size:.83rem;color:var(--error)">'+r.error+'</div>';return;}
   const albums=r.albums||[];
-  if(!albums.length){grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">No albums yet — create one above.</div>';return;}
+  if(!albums.length){grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">No folders yet — create one above.</div>';return;}
   grid.innerHTML='';
   albums.forEach(a=>{
     const d=document.createElement('div');d.className='album-item'+(a.id===S.albumId?' selected':'');
     d.onclick=()=>selectAlbum(a.id,a.title);
-    d.innerHTML=`<div class="album-item-title">${a.title||'Untitled'}</div><div class="album-item-count">${a.mediaItemsCount||0} items</div>`;
+    d.innerHTML=`<div class="album-item-title">${a.title||'Untitled'}</div><div class="album-item-count">Google Drive folder</div>`;
     grid.appendChild(d);
   });
   if(S.albumId)showSelectedAlbum();
 }
 async function createAlbum(){
   const title=document.getElementById('newAlbumName').value.trim();
-  if(!title){toast('Enter an album name',true);return;}
+  if(!title){toast('Enter a folder name',true);return;}
   const token=await ensureToken();if(!token){toast('Not connected',true);return;}
   try{
-    const r=await api('/api/albums',{access_token:token,action:'create',album_title:title});
+    const r=await api('/api/albums',{access_token:token,action:'create',folder_title:title});
     if(r.error){toast('Error: '+r.error,true);return;}
-    // Google Photos API returns album directly, may also be nested under r.album
     const album=r.album||r;
-    if(!album.id){toast('Could not get album ID — try again',true);console.error('Album response:',r);return;}
+    if(!album.id){toast('Could not create folder',true);return;}
     selectAlbum(album.id,album.title||title);
-    toast('Album "'+title+'" created!');
+    toast('Folder "'+title+'" created in Google Drive!');
     loadAlbums();
   }catch(e){toast('Failed: '+e.message,true);}
 }
@@ -520,24 +519,24 @@ function selectAlbum(id,title){
   S.albumId=id;S.albumTitle=title;saveS();showSelectedAlbum();
   document.querySelectorAll('.album-item').forEach(el=>el.classList.remove('selected'));
   document.querySelectorAll('.album-item').forEach(el=>{if(el.querySelector('.album-item-title')?.textContent===title)el.classList.add('selected');});
-  updateQR();toast('Album: '+title);
+  updateQR();toast('Folder selected: '+title);
 }
 function showSelectedAlbum(){
   const el=document.getElementById('selectedAlbumInfo');el.style.display='flex';
-  document.getElementById('selectedAlbumText').textContent='Active album: '+S.albumTitle;
+  document.getElementById('selectedAlbumText').textContent='Active Drive folder: '+S.albumTitle;
 }
 async function loadGallery(){
-  if(!S.googleConnected||!S.albumId){toast('Connect Google Photos and select an album first',true);return;}
+  if(!S.googleConnected||!S.albumId){toast('Connect Google Drive and select a folder first',true);return;}
   const token=await ensureToken();if(!token)return;
   const grid=document.getElementById('galleryGrid');
   grid.innerHTML='<div class="gallery-empty" style="grid-column:1/-1"><p style="font-size:.83rem">Loading photos…</p></div>';
   try{
-    const res=await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:search',{
-      method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
-      body:JSON.stringify({albumId:S.albumId,pageSize:50})
+    const query=encodeURIComponent(`'${S.albumId}' in parents and mimeType contains 'image/' and trashed=false`);
+    const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,description,thumbnailLink,webViewLink)&pageSize=50&orderBy=createdTime desc`,{
+      headers:{'Authorization':'Bearer '+token}
     });
     const data=await res.json();
-    const items=data.mediaItems||[];
+    const items=data.files||[];
     if(!items.length){
       grid.innerHTML='<div class="gallery-empty" style="grid-column:1/-1"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><p style="font-size:.83rem">No photos yet — they\'ll appear as guests share them</p></div>';
       return;
@@ -545,7 +544,9 @@ async function loadGallery(){
     grid.innerHTML='';
     items.forEach(item=>{
       const d=document.createElement('div');d.className='gallery-item';
-      d.innerHTML=`<img src="${item.baseUrl}=w400-h400-c" loading="lazy" alt=""><div class="gallery-item-overlay"><div class="gallery-item-meta">${item.description||''}</div></div>`;
+      const thumb=item.thumbnailLink||'';
+      d.innerHTML=`${thumb?`<img src="${thumb.replace('=s220','=s400')}" loading="lazy" alt="">`:'<div style="width:100%;height:100%;background:var(--blush);display:flex;align-items:center;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>'}<div class="gallery-item-overlay"><div class="gallery-item-meta">${item.description||item.name}</div></div>`;
+      if(item.webViewLink)d.onclick=()=>window.open(item.webViewLink,'_blank');
       grid.appendChild(d);
     });
     toast(items.length+' photos loaded');

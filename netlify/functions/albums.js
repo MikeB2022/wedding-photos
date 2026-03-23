@@ -1,74 +1,53 @@
 const https = require('https');
 
-function googleGet(path, access_token) {
+function driveRequest(options, body) {
   return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'photoslibrary.googleapis.com',
-      path,
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${access_token}` }
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(d); } });
+    const req = https.request(options, res => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        const raw = Buffer.concat(chunks).toString();
+        try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
+        catch { resolve({ status: res.statusCode, data: raw }); }
+      });
     });
     req.on('error', reject);
-    req.end();
-  });
-}
-
-function googlePost(path, access_token, body) {
-  return new Promise((resolve, reject) => {
-    const bodyStr = JSON.stringify(body);
-    const req = https.request({
-      hostname: 'photoslibrary.googleapis.com',
-      path,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${access_token}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(bodyStr)
-      }
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(d); } });
-    });
-    req.on('error', reject);
-    req.write(bodyStr);
+    if (body) req.write(body);
     req.end();
   });
 }
 
 exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
+  const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Content-Type': 'application/json' };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
-  const { access_token, action, album_title } = JSON.parse(event.body || '{}');
-
-  if (!access_token) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Missing access token' }) };
-  }
+  const { access_token, action, folder_title } = JSON.parse(event.body || '{}');
+  if (!access_token) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Missing access token' }) };
 
   try {
     if (action === 'list') {
-      const data = await googleGet('/v1/albums?pageSize=50', access_token);
-      return { statusCode: 200, headers, body: JSON.stringify({ albums: data.albums || [] }) };
+      const query = encodeURIComponent(`mimeType='application/vnd.google-apps.folder' and trashed=false`);
+      const res = await driveRequest({
+        hostname: 'www.googleapis.com',
+        path: `/drive/v3/files?q=${query}&fields=files(id,name)&orderBy=createdTime desc&pageSize=20`,
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${access_token}` }
+      });
+      const folders = (res.data.files || []).map(f => ({ id: f.id, title: f.name }));
+      return { statusCode: 200, headers, body: JSON.stringify({ albums: folders }) };
     }
 
     if (action === 'create') {
-      if (!album_title) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing album_title' }) };
-      const data = await googlePost('/v1/albums', access_token, { album: { title: album_title } });
-      if (data.error) return { statusCode: 400, headers, body: JSON.stringify({ error: data.error.message || JSON.stringify(data.error) }) };
-      // Return both top-level and nested so frontend can handle either
-      return { statusCode: 200, headers, body: JSON.stringify({ album: data, id: data.id, title: data.title }) };
+      if (!folder_title) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing folder_title' }) };
+      const meta = JSON.stringify({ name: folder_title, mimeType: 'application/vnd.google-apps.folder' });
+      const res = await driveRequest({
+        hostname: 'www.googleapis.com',
+        path: '/drive/v3/files?fields=id,name',
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(meta) }
+      }, meta);
+      if (!res.data.id) return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to create folder', detail: res.data }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ album: { id: res.data.id, title: res.data.name } }) };
     }
 
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown action' }) };
