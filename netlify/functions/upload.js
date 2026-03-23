@@ -1,14 +1,14 @@
 const https = require('https');
 
-function driveRequest(options, body) {
+function request(options, body) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, res => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
       res.on('end', () => {
-        const raw = Buffer.concat(chunks).toString();
-        try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
-        catch { resolve({ status: res.statusCode, data: raw }); }
+        const raw = Buffer.concat(chunks);
+        try { resolve({ status: res.statusCode, data: JSON.parse(raw.toString()) }); }
+        catch { resolve({ status: res.statusCode, data: raw.toString() }); }
       });
     });
     req.on('error', reject);
@@ -17,108 +17,89 @@ function driveRequest(options, body) {
   });
 }
 
-async function refreshToken(refresh_token) {
-  const body = new URLSearchParams({
-    refresh_token,
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    grant_type: 'refresh_token'
-  }).toString();
-
-  return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'oauth2.googleapis.com',
-      path: '/token',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) }
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve({}); } });
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
+async function getAccessToken() {
+  const rt = process.env.GOOGLE_REFRESH_TOKEN;
+  const cid = process.env.GOOGLE_CLIENT_ID;
+  const cs = process.env.GOOGLE_CLIENT_SECRET;
+  if (!rt || !cid || !cs) throw new Error('Missing GOOGLE_REFRESH_TOKEN, GOOGLE_CLIENT_ID, or GOOGLE_CLIENT_SECRET in environment variables');
+  const body = `refresh_token=${encodeURIComponent(rt)}&client_id=${encodeURIComponent(cid)}&client_secret=${encodeURIComponent(cs)}&grant_type=refresh_token`;
+  const res = await request({
+    hostname: 'oauth2.googleapis.com', path: '/token', method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) }
+  }, body);
+  if (!res.data.access_token) throw new Error('Token refresh failed: ' + JSON.stringify(res.data));
+  return res.data.access_token;
 }
 
-async function findOrCreateFolder(access_token, folderName) {
-  const query = encodeURIComponent(`name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
-  const searchRes = await driveRequest({
-    hostname: 'www.googleapis.com',
-    path: `/drive/v3/files?q=${query}&fields=files(id,name)`,
-    method: 'GET',
-    headers: { 'Authorization': `Bearer ${access_token}` }
-  });
-  if (searchRes.data.files && searchRes.data.files.length > 0) return searchRes.data.files[0].id;
-
-  const meta = JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' });
-  const createRes = await driveRequest({
-    hostname: 'www.googleapis.com',
-    path: '/drive/v3/files?fields=id,name',
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(meta) }
-  }, meta);
-  return createRes.data.id;
+async function findOrCreateFolder(token, name) {
+  const q = encodeURIComponent(`name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const r = await request({ hostname: 'www.googleapis.com', path: `/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=1`, method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+  if (r.data.files && r.data.files.length > 0) return r.data.files[0].id;
+  const meta = JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder' });
+  const cr = await request({ hostname: 'www.googleapis.com', path: '/drive/v3/files?fields=id', method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(meta) } }, meta);
+  return cr.data.id;
 }
 
 exports.handler = async (event) => {
-  const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Content-Type': 'application/json' };
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Content-Type': 'application/json' };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: cors, body: '' };
 
   try {
-    const { folder_name, filename, mimetype, data: base64data, guest_name, table } = JSON.parse(event.body || '{}');
+    const body = JSON.parse(event.body || '{}');
+    const { folder_id, folder_name, filename, mimetype, data: b64, guest_name, table } = body;
 
-    if (!base64data) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing photo data' }) };
+    if (!b64) return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'No image data received' }) };
 
-    // Get access token by refreshing from stored refresh token in env
-    const storedRefreshToken = process.env.GOOGLE_REFRESH_TOKEN;
-    if (!storedRefreshToken) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'No refresh token configured. Please save your token in Netlify environment variables.' }) };
-    }
+    const token = await getAccessToken();
 
-    const tokenData = await refreshToken(storedRefreshToken);
-    if (!tokenData.access_token) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Could not refresh access token', detail: tokenData }) };
-    }
-    const access_token = tokenData.access_token;
+    // Use folder_id if provided, otherwise find/create by name
+    let folderId = folder_id;
+    if (!folderId) folderId = await findOrCreateFolder(token, folder_name || 'Wedding Photos');
 
-    const folderId = await findOrCreateFolder(access_token, folder_name || 'Wedding Photos');
-    const safeFilename = filename || `wedding-photo-${Date.now()}.jpg`;
+    const imgBuffer = Buffer.from(b64, 'base64');
+    const safeName = filename || `photo-${Date.now()}.jpg`;
     const safeMime = mimetype || 'image/jpeg';
-    const description = [guest_name ? `From: ${guest_name}` : 'Wedding guest', table ? `Table ${table}` : ''].filter(Boolean).join(' · ');
+    const desc = [guest_name ? `From: ${guest_name}` : null, table ? `Table ${table}` : null].filter(Boolean).join(' · ');
 
-    const metadata = JSON.stringify({ name: safeFilename, description, parents: [folderId] });
-    const boundary = 'wedding_boundary_x1';
-    const body = [
-      `--${boundary}`,
-      'Content-Type: application/json; charset=UTF-8',
-      '',
-      metadata,
-      `--${boundary}`,
-      `Content-Type: ${safeMime}`,
-      'Content-Transfer-Encoding: base64',
-      '',
-      base64data,
-      `--${boundary}--`
-    ].join('\r\n');
+    const meta = JSON.stringify({ name: safeName, description: desc || 'Wedding guest', parents: [folderId] });
+    const boundary = 'wphoto_bound';
+    const CRLF = '\r\n';
 
-    const bodyBuffer = Buffer.from(body);
-    const uploadRes = await driveRequest({
+    // Build multipart body properly - metadata as text, image as raw binary
+    const metaPart = Buffer.from(
+      `--${boundary}${CRLF}Content-Type: application/json; charset=UTF-8${CRLF}${CRLF}${meta}${CRLF}`
+    );
+    const imgHeader = Buffer.from(
+      `--${boundary}${CRLF}Content-Type: ${safeMime}${CRLF}${CRLF}`
+    );
+    const imgFooter = Buffer.from(`${CRLF}--${boundary}--`);
+    const multipart = Buffer.concat([metaPart, imgHeader, imgBuffer, imgFooter]);
+
+    const up = await request({
       hostname: 'www.googleapis.com',
-      path: '/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+      path: '/upload/drive/v3/files?uploadType=multipart&fields=id,name,thumbnailLink,webViewLink,webContentLink',
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${access_token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': `multipart/related; boundary=${boundary}`,
-        'Content-Length': bodyBuffer.length
+        'Content-Length': multipart.length
       }
-    }, bodyBuffer);
+    }, multipart);
 
-    if (uploadRes.status !== 200) return { statusCode: uploadRes.status, headers, body: JSON.stringify({ error: 'Upload failed', detail: uploadRes.data }) };
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true, file: uploadRes.data }) };
+    if (up.status !== 200) return { statusCode: up.status, headers: cors, body: JSON.stringify({ error: 'Drive upload failed', detail: up.data }) };
+
+    // Make file publicly viewable so thumbnail works
+    await request({
+      hostname: 'www.googleapis.com',
+      path: `/drive/v3/files/${up.data.id}/permissions`,
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength('{"role":"reader","type":"anyone"}') }
+    }, '{"role":"reader","type":"anyone"}');
+
+    return { statusCode: 200, headers: cors, body: JSON.stringify({ success: true, file: up.data }) };
 
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    console.error('Upload error:', err.message);
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: err.message }) };
   }
 };

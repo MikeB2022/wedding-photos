@@ -3,552 +3,277 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Share Your Photos — Our Wedding</title>
+<title>Share Your Photos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --blush: #f5e6e0;
-    --blush-dark: #e8c4b4;
-    --sage: #8a9e8c;
-    --champagne: #f0e6d0;
-    --gold: #b8935a;
-    --gold-light: #d4b07a;
-    --cream: #faf7f2;
-    --ink: #2c2420;
-    --ink-light: #6b5a52;
-    --white: #ffffff;
-    --success: #3d7a4e;
-    --success-bg: #edf7f0;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Jost', sans-serif;
-    font-weight: 300;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  header {
-    background: var(--white);
-    border-bottom: 1px solid var(--blush-dark);
-    padding: 1.25rem 1.5rem;
-    text-align: center;
-  }
-  .header-eyebrow {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.4rem;
-  }
-  .header-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.6rem;
-    font-weight: 300;
-    color: var(--ink);
-  }
-  .header-title em { font-style: italic; color: var(--gold); }
-  .header-date {
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    color: var(--ink-light);
-    margin-top: 0.3rem;
-  }
-  .table-badge {
-    display: inline-block;
-    background: var(--blush);
-    color: var(--gold);
-    font-size: 0.65rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.9rem;
-    border: 1px solid var(--blush-dark);
-    margin-top: 0.6rem;
-  }
+:root{
+  --sand:#f7f0e6;--sand2:#ede4d6;--sand3:#d9ccba;
+  --slate:#2a2d35;--slate2:#3e4250;--slate3:#6b6f7c;
+  --gold:#c9974a;--gold2:#e8b96a;--gold3:#f5ddb0;
+  --white:#ffffff;
+  --green:#2d5a3d;--green-bg:#e8f0eb;
+  --red:#8b2020;--red-bg:#f5e8e8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--sand);color:var(--slate);min-height:100vh;display:flex;flex-direction:column}
 
-  main {
-    flex: 1;
-    padding: 2rem 1.25rem;
-    max-width: 500px;
-    margin: 0 auto;
-    width: 100%;
-  }
+header{background:var(--slate);padding:1.5rem 1.25rem;text-align:center}
+.header-tag{font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold2);margin-bottom:.5rem}
+.header-names{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:400;color:var(--white);line-height:1.15}
+.header-names em{font-style:italic;color:var(--gold2)}
+.header-sub{font-size:.72rem;letter-spacing:.1em;color:rgba(255,255,255,.45);margin-top:.35rem}
+.table-badge{display:inline-block;background:rgba(201,151,74,.2);color:var(--gold2);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;padding:.28rem .85rem;border:1px solid rgba(201,151,74,.3);border-radius:3px;margin-top:.6rem}
 
-  /* DROP ZONE */
-  .drop-zone {
-    border: 1.5px dashed var(--blush-dark);
-    background: var(--white);
-    padding: 3rem 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-    margin-bottom: 1.5rem;
-    position: relative;
-  }
-  .drop-zone:hover, .drop-zone.dragging {
-    border-color: var(--gold);
-    background: var(--blush);
-  }
-  .drop-zone input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-  }
-  .drop-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--blush);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.25rem;
-  }
-  .drop-icon svg { width: 24px; height: 24px; }
-  .drop-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.25rem;
-    font-weight: 400;
-    color: var(--ink);
-    margin-bottom: 0.5rem;
-  }
-  .drop-sub {
-    font-size: 0.8rem;
-    color: var(--ink-light);
-    line-height: 1.6;
-  }
-  .drop-formats {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    flex-wrap: wrap;
-  }
-  .format-tag {
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.2rem 0.6rem;
-    background: var(--blush);
-    color: var(--ink-light);
-    border: 1px solid var(--blush-dark);
-  }
+main{flex:1;padding:1.75rem 1.25rem;max-width:480px;margin:0 auto;width:100%}
 
-  /* PREVIEW GRID */
-  .preview-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    margin-bottom: 1.5rem;
-  }
-  .preview-item {
-    aspect-ratio: 1;
-    position: relative;
-    overflow: hidden;
-    background: var(--blush);
-  }
-  .preview-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .preview-item .remove-btn {
-    position: absolute;
-    top: 4px; right: 4px;
-    width: 22px; height: 22px;
-    background: rgba(44,36,32,0.7);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-  }
-  .preview-item .upload-status {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.7);
-    font-size: 11px;
-    color: var(--ink-light);
-    text-align: center;
-    padding: 4px;
-  }
-  .progress-bar-outer {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--blush-dark);
-  }
-  .progress-bar-inner {
-    height: 100%;
-    background: var(--gold);
-    transition: width 0.3s;
-    width: 0%;
-  }
+.drop-zone{border:1.5px dashed var(--sand3);background:var(--white);padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all .22s;margin-bottom:1.25rem;position:relative;border-radius:10px}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:var(--gold3)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{width:54px;height:54px;background:var(--sand);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.drop-icon svg{width:24px;height:24px;color:var(--gold)}
+.drop-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:400;color:var(--slate);margin-bottom:.4rem}
+.drop-sub{font-size:.78rem;color:var(--slate3);line-height:1.6}
+.fmts{display:flex;justify-content:center;gap:.4rem;margin-top:.6rem;flex-wrap:wrap}
+.fmt{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .55rem;background:var(--sand);color:var(--slate3);border:1px solid var(--sand3);border-radius:3px}
 
-  /* GUEST NAME */
-  .guest-section {
-    margin-bottom: 1.25rem;
-  }
-  .guest-section label {
-    display: block;
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-light);
-    margin-bottom: 0.5rem;
-  }
-  .guest-section input {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--blush-dark);
-    background: var(--white);
-    font-family: 'Jost', sans-serif;
-    font-size: 0.95rem;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-  .guest-section input:focus { border-color: var(--gold); }
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:1.25rem}
+.preview-item{aspect-ratio:1;position:relative;overflow:hidden;background:var(--sand2);border-radius:6px}
+.preview-item img{width:100%;height:100%;object-fit:cover;display:block}
+.remove-btn{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(42,45,53,.75);color:white;border:none;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;z-index:2}
+.prog-outer{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.1)}
+.prog-inner{height:100%;background:var(--gold);transition:width .3s;width:0%}
+.status-overlay{position:absolute;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--slate3)}
 
-  /* SUBMIT */
-  .submit-btn {
-    width: 100%;
-    background: var(--ink);
-    color: var(--white);
-    border: none;
-    padding: 1rem;
-    font-family: 'Jost', sans-serif;
-    font-size: 0.82rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-  }
-  .submit-btn:hover:not(:disabled) { background: var(--gold); }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.guest-field{margin-bottom:1.25rem}
+.guest-field label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--slate3);margin-bottom:.4rem}
+.guest-field input{width:100%;padding:.85rem 1rem;border:1px solid var(--sand3);background:var(--white);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--slate);outline:none;transition:border-color .18s;-webkit-appearance:none}
+.guest-field input:focus{border-color:var(--gold)}
 
-  /* SUCCESS STATE */
-  .success-panel {
-    text-align: center;
-    padding: 3rem 1.5rem;
-    background: var(--white);
-    border: 1px solid var(--blush-dark);
-    display: none;
-  }
-  .success-icon {
-    width: 60px; height: 60px;
-    border-radius: 50%;
-    background: var(--success-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-  }
-  .success-icon svg { width: 28px; height: 28px; }
-  .success-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.8rem;
-    font-weight: 300;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-  }
-  .success-title em { font-style: italic; color: var(--gold); }
-  .success-sub {
-    font-size: 0.87rem;
-    line-height: 1.8;
-    color: var(--ink-light);
-    margin-bottom: 2rem;
-  }
-  .share-more-btn {
-    background: transparent;
-    color: var(--ink);
-    border: 1px solid var(--blush-dark);
-    padding: 0.75rem 1.75rem;
-    font-family: 'Jost', sans-serif;
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .share-more-btn:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.submit-btn{width:100%;background:var(--slate);color:var(--white);border:none;padding:1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:.6rem}
+.submit-btn:hover:not(:disabled){background:var(--gold)}
+.submit-btn:disabled{opacity:.45;cursor:not-allowed}
+.count-pill{background:var(--gold);color:var(--white);font-size:.68rem;padding:.15rem .5rem;border-radius:10px}
 
-  /* Photo count badge */
-  .count-badge {
-    background: var(--gold);
-    color: var(--white);
-    font-size: 0.7rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 10px;
-    margin-left: 0.4rem;
-  }
+.success{text-align:center;padding:2.5rem 1.5rem;background:var(--white);border-radius:10px;display:none}
+.success-ring{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
+.success-ring svg{width:28px;height:28px;color:var(--green)}
+.success-title{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:400;color:var(--slate);margin-bottom:.6rem}
+.success-title em{font-style:italic;color:var(--gold)}
+.success-msg{font-size:.85rem;line-height:1.8;color:var(--slate3);margin-bottom:1.75rem}
+.more-btn{background:transparent;color:var(--slate);border:1px solid var(--sand3);padding:.75rem 1.75rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.more-btn:hover{background:var(--slate);color:var(--white);border-color:var(--slate)}
 
-  footer {
-    text-align: center;
-    padding: 1.5rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    color: var(--ink-light);
-    border-top: 1px solid var(--blush);
-  }
+.err-banner{padding:.75rem 1rem;border-radius:8px;font-size:.8rem;line-height:1.5;display:none;gap:.5rem;align-items:flex-start;margin-bottom:1rem;background:var(--red-bg);color:var(--red);border:1px solid #e0b0b0}
+.err-banner svg{flex-shrink:0;margin-top:1px}
+
+footer{text-align:center;padding:1.25rem;font-size:.7rem;letter-spacing:.08em;color:var(--slate3);border-top:1px solid var(--sand2)}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--white);border-radius:50%;animation:spin .65s linear infinite}
 </style>
 </head>
 <body>
-
 <header>
-  <p class="header-eyebrow">Wedding Day</p>
-  <h1 class="header-title" id="headerTitle">Alexandra <em>&</em> James</h1>
-  <p class="header-date" id="headerDate">June 14, 2025 · Rosewood Gardens</p>
+  <div class="header-tag">Wedding Day</div>
+  <h1 class="header-names" id="names">Alexandra <em>&</em> James</h1>
+  <div class="header-sub" id="headerSub">June 14, 2025 · Rosewood Gardens</div>
   <div class="table-badge" id="tableBadge">Table 1</div>
 </header>
 
 <main>
-
-  <!-- UPLOAD FORM -->
   <div id="uploadForm">
+    <div class="err-banner" id="errBanner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errText"></span>
+    </div>
+
     <div class="drop-zone" id="dropZone">
       <input type="file" id="fileInput" accept="image/*,video/*" multiple>
       <div class="drop-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21,15 16,10 5,21"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
       </div>
       <div class="drop-title">Tap to add photos</div>
-      <p class="drop-sub">Share your favourite moments from today — they'll be added to our wedding album</p>
-      <div class="drop-formats">
-        <span class="format-tag">JPG</span>
-        <span class="format-tag">PNG</span>
-        <span class="format-tag">HEIC</span>
-        <span class="format-tag">MP4</span>
-      </div>
+      <p class="drop-sub">Share your favourite moments — saved straight to our wedding album</p>
+      <div class="fmts"><span class="fmt">JPG</span><span class="fmt">PNG</span><span class="fmt">HEIC</span><span class="fmt">MP4</span></div>
     </div>
 
-    <div class="preview-grid" id="previewGrid" style="display:none;"></div>
+    <div class="preview-grid" id="previewGrid" style="display:none"></div>
 
-    <div class="guest-section">
+    <div class="guest-field">
       <label>Your name (optional)</label>
       <input type="text" id="guestName" placeholder="e.g. Sarah & Tom">
     </div>
 
     <button class="submit-btn" id="submitBtn" onclick="submitPhotos()" disabled>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Share Photos <span class="count-badge" id="countBadge" style="display:none;">0</span>
+      Share Photos
+      <span class="count-pill" id="countPill" style="display:none">0</span>
     </button>
   </div>
 
-  <!-- SUCCESS -->
-  <div class="success-panel" id="successPanel">
-    <div class="success-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.5">
-        <polyline points="20,6 9,17 4,12"/>
-      </svg>
+  <div class="success" id="successPanel">
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
     </div>
     <h2 class="success-title">Thank you <em>so much!</em></h2>
-    <p class="success-sub" id="successMsg">Your photos have been added to our wedding album. We can't wait to look back on these beautiful memories!</p>
-    <button class="share-more-btn" onclick="resetForm()">Share more photos</button>
+    <p class="success-msg" id="successMsg">Your photos have been saved to our wedding album. We can't wait to look back on these beautiful memories!</p>
+    <button class="more-btn" onclick="reset()">Share more photos</button>
   </div>
-
 </main>
 
-<footer>
-  <p id="footerText">Made with love · Alexandra & James · 2025</p>
-</footer>
+<footer><p id="footerTxt">Made with love · Alexandra & James</p></footer>
 
 <script>
-// Read URL params
-const params = new URLSearchParams(window.location.search);
-const table = params.get('table') || '1';
-const albumUrl = params.get('album') || '';
-const name1 = params.get('n1') || 'Alexandra';
-const name2 = params.get('n2') || 'James';
-const dateStr = params.get('date') || 'June 14, 2025';
-const venue = params.get('venue') || '';
-const message = params.get('msg') || '';
+const P = new URLSearchParams(window.location.search);
+const table = P.get('table') || '1';
+const folderId = P.get('fid') || '';
+const folderName = P.get('fname') || 'Wedding Photos';
+const n1 = P.get('n1') || 'Alexandra';
+const n2 = P.get('n2') || 'James';
+const dateStr = P.get('date') || '';
+const venue = P.get('venue') || '';
 
-// Update UI
+document.getElementById('names').innerHTML = n1 + ' <em>&</em> ' + n2;
 document.getElementById('tableBadge').textContent = 'Table ' + table;
-document.getElementById('headerTitle').innerHTML = name1 + ' <em>&</em> ' + name2;
-document.getElementById('headerDate').textContent = dateStr + (venue ? ' · ' + venue : '');
-document.getElementById('footerText').textContent = 'Made with love · ' + name1 + ' & ' + name2;
+document.getElementById('headerSub').textContent = [dateStr, venue].filter(Boolean).join(' · ');
+document.getElementById('footerTxt').textContent = 'Made with love · ' + n1 + ' & ' + n2;
 
-let selectedFiles = [];
-
+let files = [];
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const previewGrid = document.getElementById('previewGrid');
 const submitBtn = document.getElementById('submitBtn');
-const countBadge = document.getElementById('countBadge');
+const countPill = document.getElementById('countPill');
 
-// Drag & drop
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('dragging');
-});
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragging');
-  handleFiles(Array.from(e.dataTransfer.files));
-});
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); addFiles(Array.from(e.dataTransfer.files)); });
+fileInput.addEventListener('change', e => { addFiles(Array.from(e.target.files)); fileInput.value = ''; });
 
-fileInput.addEventListener('change', e => {
-  handleFiles(Array.from(e.target.files));
-  fileInput.value = '';
-});
-
-function handleFiles(files) {
-  const images = files.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
-  images.forEach(file => {
-    if (selectedFiles.find(f => f.name === file.name && f.size === file.size)) return;
-    selectedFiles.push(file);
-    addPreview(file, selectedFiles.length - 1);
+function addFiles(newFiles) {
+  newFiles.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/')).forEach(file => {
+    if (files.find(f => f && f.name === file.name && f.size === file.size)) return;
+    const idx = files.length;
+    files.push(file);
+    addPreview(file, idx);
   });
-  updateSubmit();
+  updateBtn();
 }
-
 function addPreview(file, idx) {
   previewGrid.style.display = 'grid';
   const item = document.createElement('div');
   item.className = 'preview-item';
-  item.id = 'preview-' + idx;
-  const isVideo = file.type.startsWith('video/');
-  if (!isVideo) {
+  item.id = 'prev-' + idx;
+  if (file.type.startsWith('image/')) {
     const reader = new FileReader();
     reader.onload = e => {
-      item.innerHTML = `
-        <img src="${e.target.result}" alt="">
-        <button class="remove-btn" onclick="removeFile(${idx})">×</button>
-        <div class="progress-bar-outer"><div class="progress-bar-inner" id="prog-${idx}"></div></div>
-      `;
+      item.innerHTML = `<img src="${e.target.result}" alt=""><button class="remove-btn" onclick="removeFile(${idx})">×</button><div class="prog-outer"><div class="prog-inner" id="prog-${idx}"></div></div>`;
     };
     reader.readAsDataURL(file);
   } else {
-    item.innerHTML = `
-      <div style="width:100%;height:100%;background:var(--champagne);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-light);">
-        <div style="text-align:center;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg>
-          <div style="margin-top:4px;">Video</div>
-        </div>
-      </div>
-      <button class="remove-btn" onclick="removeFile(${idx})">×</button>
-      <div class="progress-bar-outer"><div class="progress-bar-inner" id="prog-${idx}"></div></div>
-    `;
+    item.innerHTML = `<div style="width:100%;height:100%;background:var(--sand2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg><span style="font-size:10px;color:var(--slate3)">Video</span></div><button class="remove-btn" onclick="removeFile(${idx})">×</button><div class="prog-outer"><div class="prog-inner" id="prog-${idx}"></div></div>`;
   }
   previewGrid.appendChild(item);
 }
-
 function removeFile(idx) {
-  selectedFiles[idx] = null;
-  const item = document.getElementById('preview-' + idx);
-  if (item) item.remove();
-  if (selectedFiles.filter(Boolean).length === 0) {
-    previewGrid.style.display = 'none';
-    selectedFiles = [];
-  }
-  updateSubmit();
+  files[idx] = null;
+  const el = document.getElementById('prev-' + idx);
+  if (el) el.remove();
+  if (!files.filter(Boolean).length) { previewGrid.style.display = 'none'; files = []; }
+  updateBtn();
 }
-
-function updateSubmit() {
-  const count = selectedFiles.filter(Boolean).length;
+function updateBtn() {
+  const count = files.filter(Boolean).length;
   submitBtn.disabled = count === 0;
-  if (count > 0) {
-    countBadge.style.display = 'inline';
-    countBadge.textContent = count;
-  } else {
-    countBadge.style.display = 'none';
-  }
+  countPill.style.display = count > 0 ? 'inline' : 'none';
+  countPill.textContent = count;
+}
+function showErr(msg) {
+  const b = document.getElementById('errBanner');
+  b.style.display = 'flex';
+  document.getElementById('errText').textContent = msg;
+}
+function hideErr() { document.getElementById('errBanner').style.display = 'none'; }
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result.split(',')[1]);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+}
+function setProg(idx, pct) {
+  const b = document.getElementById('prog-' + idx); if (b) b.style.width = pct + '%';
 }
 
 async function submitPhotos() {
-  const files = selectedFiles.filter(Boolean);
-  if (!files.length) return;
-
+  const activeFiles = files.filter(Boolean);
+  if (!activeFiles.length) return;
+  hideErr();
   submitBtn.disabled = true;
-  submitBtn.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-    Uploading…
-  `;
+  submitBtn.innerHTML = '<span class="spinner"></span> Uploading…';
 
-  // If albumUrl is a Google Photos share link, open it for manual upload
-  // For full API integration, this would POST to your backend endpoint
-  const endpoint = '/api/upload'; // Your backend endpoint
-
-  let uploaded = 0;
-  const guestName = document.getElementById('guestName').value || 'Guest';
+  const guestName = document.getElementById('guestName').value.trim();
+  let ok = 0, fail = 0;
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     if (!file) continue;
-
-    // Simulate upload progress (replace with real API call)
-    await simulateUpload(i, file, guestName);
-    uploaded++;
+    setProg(i, 20);
+    try {
+      const b64 = await toBase64(file);
+      setProg(i, 55);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          folder_id: folderId || undefined,
+          folder_name: folderName,
+          filename: file.name,
+          mimetype: file.type,
+          data: b64,
+          guest_name: guestName || undefined,
+          table
+        })
+      });
+      const result = await res.json();
+      setProg(i, 100);
+      if (result.success) ok++;
+      else { fail++; console.error('Upload error:', result.error); }
+    } catch (e) {
+      fail++; setProg(i, 0);
+      console.error('Upload exception:', e);
+    }
   }
 
-  // Show success
+  if (ok === 0) {
+    showErr('Upload failed — please try again or ask for help.');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Try Again';
+    return;
+  }
+
   document.getElementById('uploadForm').style.display = 'none';
   document.getElementById('successPanel').style.display = 'block';
-  document.getElementById('successPanel').style.display = 'block';
-  const successMsg = albumUrl
-    ? `Your ${uploaded} photo${uploaded>1?'s':''} have been shared! They'll appear in our Google Photos album shortly.`
-    : `Your ${uploaded} photo${uploaded>1?'s':''} have been shared with us. Thank you for capturing these beautiful moments!`;
-  document.getElementById('successMsg').textContent = successMsg;
+  const msg = fail > 0
+    ? `${ok} photo${ok > 1 ? 's' : ''} shared! (${fail} failed)`
+    : `Your ${ok} photo${ok > 1 ? 's' : ''} ${ok > 1 ? 'have' : 'has'} been saved to the wedding album. Thank you for being part of our day!`;
+  document.getElementById('successMsg').textContent = msg;
 }
 
-async function simulateUpload(idx, file, guestName) {
-  return new Promise(resolve => {
-    const prog = document.getElementById('prog-' + idx);
-    let p = 0;
-    const interval = setInterval(() => {
-      p += Math.random() * 25;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(interval);
-        if (prog) prog.style.width = '100%';
-        setTimeout(resolve, 200);
-      } else {
-        if (prog) prog.style.width = p + '%';
-      }
-    }, 120);
-  });
-}
-
-function resetForm() {
-  selectedFiles = [];
+function reset() {
+  files = [];
   previewGrid.innerHTML = '';
   previewGrid.style.display = 'none';
   document.getElementById('guestName').value = '';
   document.getElementById('successPanel').style.display = 'none';
   document.getElementById('uploadForm').style.display = 'block';
+  hideErr();
   submitBtn.disabled = true;
-  submitBtn.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    Share Photos <span class="count-badge" id="countBadge" style="display:none;">0</span>
-  `;
+  submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Share Photos <span class="count-pill" id="countPill" style="display:none">0</span>';
 }
 </script>
-<style>
-@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-</style>
 </body>
 </html>

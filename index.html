@@ -3,585 +3,731 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Our Wedding — Admin</title>
+<title>Wedding Photos — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root {
-    --blush:#f5e6e0;--blush-dark:#e8c4b4;--champagne:#f0e6d0;--gold:#b8935a;--gold-light:#d4b07a;
-    --cream:#faf7f2;--ink:#2c2420;--ink-light:#6b5a52;--white:#ffffff;--shadow:rgba(44,36,32,0.08);
-    --success:#2d7a2d;--success-bg:#eaf5ea;--error:#c0392b;--error-bg:#fdf0ef;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Jost',sans-serif;font-weight:300;background:var(--cream);color:var(--ink);min-height:100vh}
-  nav{display:flex;justify-content:space-between;align-items:center;padding:1.5rem 3rem;background:var(--white);border-bottom:1px solid var(--blush-dark);position:sticky;top:0;z-index:100}
-  .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;letter-spacing:.08em;color:var(--ink)}
-  .nav-logo span{color:var(--gold);font-style:italic}
-  nav ul{display:flex;gap:2rem;list-style:none}
-  nav a{text-decoration:none;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);transition:color .2s}
-  nav a:hover{color:var(--gold)}
-  section{padding:4rem 3rem}
-  .section-inner{max-width:1100px;margin:0 auto}
-  .section-tag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
-  .section-title{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--ink);margin-bottom:.75rem}
-  .section-title em{font-style:italic;color:var(--gold)}
-  .section-body{font-size:.92rem;line-height:1.9;color:var(--ink-light);max-width:560px;margin-bottom:2.5rem}
-  .btn-primary{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--white);padding:.85rem 1.6rem;font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s}
-  .btn-primary:hover{background:var(--gold)}
-  .btn-primary:disabled{opacity:.5;cursor:not-allowed;background:var(--ink)}
-  .btn-secondary{display:inline-flex;align-items:center;gap:.6rem;background:transparent;color:var(--ink);padding:.85rem 1.6rem;font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--ink);cursor:pointer;transition:all .2s;text-decoration:none}
-  .btn-secondary:hover{background:var(--ink);color:var(--white)}
-  .btn-danger{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--error);padding:.65rem 1.2rem;font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--error);cursor:pointer;transition:all .2s}
-  .btn-danger:hover{background:var(--error);color:var(--white)}
-  .form-group{margin-bottom:1.25rem}
-  .form-group label{display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-light);margin-bottom:.4rem}
-  .form-group input,.form-group select{width:100%;padding:.75rem 1rem;border:1px solid var(--blush-dark);background:var(--white);font-family:'Jost',sans-serif;font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s}
-  .form-group input:focus,.form-group select:focus{border-color:var(--gold)}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-  .panel{background:var(--white);border:1px solid var(--blush-dark);padding:2rem;margin-bottom:1.5rem}
-  .panel h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;margin-bottom:1.25rem;color:var(--ink)}
-  .status-pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:2px}
-  .status-dot{width:6px;height:6px;border-radius:50%}
-  .status-connected{background:var(--success-bg);color:var(--success)}
-  .status-connected .status-dot{background:var(--success)}
-  .status-disconnected{background:var(--blush);color:var(--ink-light)}
-  .status-disconnected .status-dot{background:var(--ink-light)}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  #google-section{background:var(--blush)}
-  .google-connect-card{background:var(--white);border:1px solid var(--blush-dark);padding:2rem;max-width:680px}
-  .google-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
-  .google-icon{width:44px;height:44px;background:var(--cream);border:1px solid var(--blush-dark);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .google-icon svg{width:26px;height:26px}
-  .auth-steps{counter-reset:asteps}
-  .auth-step{counter-increment:asteps;display:grid;grid-template-columns:28px 1fr;gap:.75rem;padding:1rem 0;border-bottom:1px solid var(--blush)}
-  .auth-step:last-child{border:none}
-  .auth-step-num{width:28px;height:28px;border-radius:50%;background:var(--blush);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);flex-shrink:0}
-  .auth-step-num::after{content:counter(asteps)}
-  .auth-step h4{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:400;margin-bottom:.3rem}
-  .auth-step p{font-size:.82rem;line-height:1.7;color:var(--ink-light)}
-  .env-block{background:var(--cream);border:1px solid var(--blush-dark);padding:.75rem 1rem;font-family:monospace;font-size:.78rem;line-height:2;margin:.6rem 0}
-  .album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin:1rem 0}
-  .album-item{border:1px solid var(--blush-dark);padding:1rem;cursor:pointer;transition:all .2s;text-align:center}
-  .album-item:hover{border-color:var(--gold)}
-  .album-item.selected{border-color:var(--gold);background:var(--blush)}
-  .album-item-title{font-size:.82rem;color:var(--ink);margin-top:.3rem}
-  .album-item-count{font-size:.72rem;color:var(--ink-light)}
-  #qr-section{background:var(--champagne)}
-  .qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
-  .qr-card-preview{background:var(--white);border:1px solid var(--blush-dark);padding:2.5rem 2rem;text-align:center;position:relative;box-shadow:0 8px 40px var(--shadow)}
-  .qr-card-preview::before{content:'';position:absolute;top:10px;left:10px;right:10px;bottom:10px;border:1px solid var(--blush);pointer-events:none}
-  .qr-card-couple{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--ink);margin-bottom:.3rem}
-  .qr-card-couple em{font-style:italic;color:var(--gold)}
-  .qr-card-date{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light);margin-bottom:1.25rem}
-  #qrcode{display:flex;justify-content:center;margin:1.25rem 0}
-  #qrcode canvas,#qrcode img{border:6px solid var(--white)!important;box-shadow:0 0 0 1px var(--blush-dark)}
-  .qr-card-message{font-size:.78rem;line-height:1.7;color:var(--ink-light);font-style:italic;margin-top:.75rem}
-  .qr-table-badge{display:inline-block;background:var(--blush);color:var(--gold);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;padding:.35rem .9rem;margin-top:.75rem;border:1px solid var(--blush-dark)}
-  .qr-actions{display:flex;flex-direction:column;gap:.75rem;margin-top:1.5rem}
-  #table-cards{background:var(--white)}
-  .tables-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1.25rem;margin-bottom:1.5rem}
-  .table-card{background:var(--cream);border:1px solid var(--blush-dark);padding:1.25rem;text-align:center;cursor:pointer;transition:all .2s;position:relative}
-  .table-card:hover{border-color:var(--gold);transform:translateY(-2px)}
-  .table-card.selected{border-color:var(--gold);background:var(--blush)}
-  .table-card-num{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--gold)}
-  .table-card-label{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light)}
-  .table-card-check{position:absolute;top:6px;right:6px;width:14px;height:14px;background:var(--gold);border-radius:50%;display:none}
-  .table-card.selected .table-card-check{display:block}
-  #setup{background:var(--white)}
-  .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
-  #gallery{background:var(--cream)}
-  .gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
-  .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px}
-  .gallery-item{aspect-ratio:1;overflow:hidden;position:relative;background:var(--blush);cursor:pointer}
-  .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
-  .gallery-item:hover img{transform:scale(1.05)}
-  .gallery-item-overlay{position:absolute;inset:0;background:rgba(44,36,32,0);transition:background .3s;display:flex;align-items:flex-end;padding:.75rem}
-  .gallery-item:hover .gallery-item-overlay{background:rgba(44,36,32,0.4)}
-  .gallery-item-meta{color:var(--white);opacity:0;transition:opacity .3s;font-size:.72rem}
-  .gallery-item:hover .gallery-item-meta{opacity:1}
-  .gallery-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;border:1px dashed var(--blush-dark);color:var(--ink-light);gap:.75rem}
-  .alert{padding:.85rem 1rem;font-size:.83rem;line-height:1.6;display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1rem}
-  .alert svg{flex-shrink:0;margin-top:1px}
-  .alert-info{background:#e8f4fd;color:#1a6090;border:1px solid #b3d9f5}
-  .alert-success{background:var(--success-bg);color:var(--success);border:1px solid #b8e0b8}
-  .alert-error{background:var(--error-bg);color:var(--error);border:1px solid #f5c6c2}
-  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:var(--white);padding:.9rem 1.4rem;font-size:.8rem;z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;letter-spacing:.05em}
-  .toast.show{opacity:1;transform:translateY(0)}
-  .toast.error{background:var(--error)}
-  footer{background:var(--ink);color:rgba(255,255,255,.45);text-align:center;padding:1.75rem;font-size:.75rem;letter-spacing:.1em}
-  footer span{color:var(--gold-light)}
-  @media(max-width:900px){.setup-grid,.qr-grid{grid-template-columns:1fr}nav ul{gap:1rem}nav{padding:1rem 1.5rem}section{padding:2.5rem 1.5rem}.form-row{grid-template-columns:1fr}}
-  @media print{nav,#setup,#google-section,#gallery,#table-cards,.qr-actions,.qr-controls{display:none!important}.qr-grid{grid-template-columns:1fr}.qr-card-preview{box-shadow:none}}
+:root {
+  --sand:#f7f0e6;--sand2:#ede4d6;--sand3:#d9ccba;
+  --slate:#2a2d35;--slate2:#3e4250;--slate3:#6b6f7c;
+  --gold:#c9974a;--gold2:#e8b96a;--gold3:#f5ddb0;
+  --rose:#e8d5cc;--rose2:#d4b5a8;
+  --white:#ffffff;--black:#1a1c22;
+  --green:#2d5a3d;--green-bg:#e8f0eb;
+  --red:#8b2020;--red-bg:#f5e8e8;
+  --radius:6px;--radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--sand);color:var(--slate);min-height:100vh}
+
+/* NAV */
+.topbar{background:var(--slate);color:var(--white);display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:56px;position:sticky;top:0;z-index:200}
+.topbar-logo{font-family:'Playfair Display',serif;font-size:1.15rem;font-style:italic;color:var(--gold2);letter-spacing:.04em}
+.topbar-links{display:flex;gap:.25rem}
+.topbar-links a{color:rgba(255,255,255,.55);text-decoration:none;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .9rem;border-radius:4px;transition:all .2s}
+.topbar-links a:hover{color:var(--white);background:rgba(255,255,255,.08)}
+
+/* LAYOUT */
+.page{max-width:1200px;margin:0 auto;padding:2.5rem 2rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius-lg);padding:1.75rem;border:1px solid var(--sand3);margin-bottom:1.5rem}
+.card-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:400;color:var(--slate);margin-bottom:1.25rem}
+.card-title em{font-style:italic;color:var(--gold)}
+
+/* SECTION HEADERS */
+.section-head{margin-bottom:1.5rem}
+.section-eyebrow{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+.section-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:400;color:var(--slate)}
+.section-title em{font-style:italic}
+.section-body{font-size:.88rem;line-height:1.8;color:var(--slate3);margin-top:.5rem}
+
+/* HERO BANNER */
+.hero{background:var(--slate);border-radius:var(--radius-lg);padding:3rem 3.5rem;margin-bottom:2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;border-radius:50%;border:1px solid rgba(201,151,74,.15)}
+.hero::after{content:'';position:absolute;bottom:-80px;left:200px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(201,151,74,.1)}
+.hero-eyebrow{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold2);margin-bottom:.75rem}
+.hero-title{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:400;color:var(--white);line-height:1.15;margin-bottom:.75rem}
+.hero-title em{font-style:italic;color:var(--gold2)}
+.hero-sub{font-size:.9rem;color:rgba(255,255,255,.55);line-height:1.7;max-width:480px;margin-bottom:2rem}
+.hero-stats{display:flex;gap:2.5rem}
+.stat-num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold2)}
+.stat-label{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:.1rem}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.5rem;font-family:'DM Sans',sans-serif;font-size:.78rem;letter-spacing:.06em;padding:.7rem 1.4rem;border:none;cursor:pointer;transition:all .18s;border-radius:var(--radius);font-weight:400}
+.btn-dark{background:var(--slate);color:var(--white)}.btn-dark:hover{background:var(--slate2)}
+.btn-gold{background:var(--gold);color:var(--white)}.btn-gold:hover{background:var(--gold2);color:var(--slate)}
+.btn-outline{background:transparent;color:var(--slate);border:1px solid var(--sand3)}.btn-outline:hover{border-color:var(--slate);background:var(--sand)}
+.btn-ghost{background:transparent;color:var(--slate3);border:1px solid transparent}.btn-ghost:hover{color:var(--slate);background:var(--sand)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid #e0b0b0}.btn-danger:hover{background:var(--red-bg)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* FORM */
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--slate3);margin-bottom:.35rem;font-weight:400}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:.65rem .9rem;border:1px solid var(--sand3);background:var(--sand);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--slate);outline:none;transition:border-color .18s}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);background:var(--white)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* STATUS PILLS */
+.pill{display:inline-flex;align-items:center;gap:.35rem;font-size:.68rem;letter-spacing:.08em;padding:.25rem .7rem;border-radius:20px;font-weight:400}
+.pill-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.pill-connected{background:var(--green-bg);color:var(--green)}.pill-connected .pill-dot{background:var(--green)}
+.pill-disconnected{background:var(--sand2);color:var(--slate3)}.pill-disconnected .pill-dot{background:var(--slate3)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pill-loading .pill-dot{animation:blink 1s infinite}
+.pill-loading{background:var(--gold3);color:#7a5a1a}
+
+/* ALERTS */
+.alert{padding:.8rem 1rem;border-radius:var(--radius);font-size:.82rem;line-height:1.6;display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1rem}
+.alert svg{flex-shrink:0;margin-top:1px}
+.alert-info{background:#e8f2fb;color:#1a5f8a;border:1px solid #b8d8f0}
+.alert-success{background:var(--green-bg);color:var(--green);border:1px solid #b8d8c0}
+.alert-warn{background:#fef8e8;color:#7a5a00;border:1px solid #f0dcaa}
+.alert-error{background:var(--red-bg);color:var(--red);border:1px solid #e0b0b0}
+
+/* DRIVE CONNECTION */
+.drive-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--sand2)}
+.drive-icon{width:42px;height:42px;background:var(--sand);border:1px solid var(--sand3);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.drive-icon svg{width:24px;height:24px}
+
+/* STEPS */
+.setup-steps{counter-reset:steps}
+.setup-step{counter-increment:steps;display:grid;grid-template-columns:32px 1fr;gap:.9rem;padding:1rem 0;border-bottom:1px solid var(--sand2)}
+.setup-step:last-child{border:none;padding-bottom:0}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--sand2);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.95rem;color:var(--gold);flex-shrink:0;margin-top:2px}
+.step-num::after{content:counter(steps)}
+.step-body h4{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:400;margin-bottom:.3rem}
+.step-body p{font-size:.8rem;line-height:1.7;color:var(--slate3)}
+.mono-box{background:var(--sand);border:1px solid var(--sand3);border-radius:var(--radius);padding:.55rem .8rem;font-family:monospace;font-size:.75rem;color:var(--slate);margin:.4rem 0;word-break:break-all;line-height:1.5}
+.env-table{background:var(--sand);border:1px solid var(--sand3);border-radius:var(--radius);padding:.75rem 1rem;font-family:monospace;font-size:.75rem;line-height:2.2;margin:.5rem 0}
+.env-key{color:var(--slate3)}
+.env-val{color:var(--gold)}
+
+/* TOKEN BOX */
+.token-reveal{background:var(--slate);color:rgba(255,255,255,.8);border-radius:var(--radius);padding:.75rem 1rem;font-family:monospace;font-size:.72rem;word-break:break-all;margin:.6rem 0;line-height:1.5;border:1px solid var(--slate2)}
+.token-label{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold2);margin-bottom:.3rem}
+
+/* FOLDER GRID */
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin:1rem 0}
+.folder-item{border:1px solid var(--sand3);border-radius:var(--radius);padding:1rem .75rem;cursor:pointer;transition:all .18s;text-align:center;background:var(--sand)}
+.folder-item:hover{border-color:var(--gold);background:var(--white)}
+.folder-item.selected{border-color:var(--gold);background:var(--gold3)}
+.folder-item svg{width:28px;height:28px;margin:0 auto .4rem;display:block;color:var(--gold)}
+.folder-name{font-size:.78rem;color:var(--slate);word-break:break-word;line-height:1.3}
+.folder-check{display:none;width:14px;height:14px;background:var(--gold);border-radius:50%;margin:.35rem auto 0}
+.folder-item.selected .folder-check{display:block}
+
+/* QR CARD */
+.qr-preview{background:var(--white);border:1px solid var(--sand3);border-radius:var(--radius-lg);padding:2.5rem 2rem;text-align:center;position:relative}
+.qr-preview::before{content:'';position:absolute;top:10px;left:10px;right:10px;bottom:10px;border:1px solid var(--sand2);border-radius:8px;pointer-events:none}
+.qr-names{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--slate);margin-bottom:.25rem}
+.qr-names em{font-style:italic;color:var(--gold)}
+.qr-date{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--slate3);margin-bottom:1.25rem}
+#qrcode{display:flex;justify-content:center;margin:1.25rem 0}
+#qrcode canvas,#qrcode img{border:6px solid var(--white)!important;box-shadow:0 0 0 1px var(--sand3);border-radius:4px}
+.qr-msg{font-size:.75rem;color:var(--slate3);font-style:italic;margin-top:.6rem;line-height:1.6}
+.qr-table-tag{display:inline-block;background:var(--sand);color:var(--gold);font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .85rem;margin-top:.75rem;border:1px solid var(--sand3);border-radius:3px}
+
+/* TABLE CARDS */
+.tables-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem;margin-bottom:1.5rem}
+.table-tile{background:var(--white);border:1px solid var(--sand3);border-radius:var(--radius);padding:1.1rem;text-align:center;cursor:pointer;transition:all .18s;position:relative}
+.table-tile:hover{border-color:var(--gold);transform:translateY(-2px)}
+.table-tile.sel{border-color:var(--gold);background:var(--gold3)}
+.table-num{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--gold)}
+.table-lbl{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--slate3)}
+.table-check{position:absolute;top:5px;right:5px;width:12px;height:12px;background:var(--gold);border-radius:50%;display:none}
+.table-tile.sel .table-check{display:block}
+
+/* GALLERY */
+.gallery-masonry{columns:4;gap:4px;column-fill:balance}
+@media(max-width:900px){.gallery-masonry{columns:3}}
+@media(max-width:600px){.gallery-masonry{columns:2}}
+.gallery-photo{break-inside:avoid;margin-bottom:4px;position:relative;overflow:hidden;background:var(--sand2);border-radius:2px;cursor:pointer}
+.gallery-photo img{width:100%;display:block;transition:transform .4s}
+.gallery-photo:hover img{transform:scale(1.04)}
+.gallery-photo-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,28,34,.6) 0%,transparent 60%);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:.6rem}
+.gallery-photo:hover .gallery-photo-overlay{opacity:1}
+.gallery-photo-meta{color:rgba(255,255,255,.9);font-size:.68rem;line-height:1.4}
+.gallery-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;border:1px dashed var(--sand3);border-radius:var(--radius-lg);color:var(--slate3);gap:.75rem;text-align:center;padding:2rem}
+.gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.gallery-count{font-size:.78rem;color:var(--slate3)}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(26,28,34,.95);z-index:1000;display:none;align-items:center;justify-content:center;padding:2rem}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:4px}
+.lightbox-close{position:absolute;top:1.25rem;right:1.25rem;background:rgba(255,255,255,.1);color:var(--white);border:none;border-radius:50%;width:40px;height:40px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lightbox-meta{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:.78rem;text-align:center}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--slate);color:var(--white);padding:.8rem 1.25rem;border-radius:var(--radius);font-size:.8rem;z-index:9999;opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.err{background:#7a1a1a}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:spin .65s linear infinite}
+
+footer{text-align:center;padding:2rem;font-size:.72rem;color:var(--slate3);letter-spacing:.06em;margin-top:2rem}
+footer strong{color:var(--gold)}
+
+@media(max-width:900px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .topbar{padding:0 1.25rem}
+  .page{padding:1.5rem 1rem}
+  .hero{padding:2rem 1.5rem}
+  .hero-title{font-size:1.9rem}
+  .form-row{grid-template-columns:1fr}
+}
+@media print{
+  .topbar,#setup,#drive-section,#table-section,footer,.qr-actions{display:none!important}
+  .qr-preview{box-shadow:none;border:1px solid #ccc}
+}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">Moments <span>& Memories</span></div>
-  <ul>
-    <li><a href="#setup">Details</a></li>
-    <li><a href="#google-section">Google Photos</a></li>
-    <li><a href="#qr-section">QR Codes</a></li>
-    <li><a href="#gallery">Gallery</a></li>
-  </ul>
-</nav>
+<div class="topbar">
+  <div class="topbar-logo">Moments & Memories</div>
+  <div class="topbar-links">
+    <a href="#setup">Details</a>
+    <a href="#drive-section">Google Drive</a>
+    <a href="#qr-section">QR Codes</a>
+    <a href="#gallery-section">Gallery</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="page">
+<div class="hero" id="heroSection">
+  <div class="hero-eyebrow">Wedding Photo Hub</div>
+  <h1 class="hero-title" id="heroTitle">Alexandra <em>&</em> James</h1>
+  <p class="hero-sub" id="heroSub">June 14, 2025 · Rosewood Gardens — Guests scan QR codes at their table and share photos directly to your Google Drive.</p>
+  <div class="hero-stats">
+    <div><div class="stat-num" id="statPhotos">0</div><div class="stat-label">Photos shared</div></div>
+    <div><div class="stat-num" id="statTables">—</div><div class="stat-label">Tables set up</div></div>
+    <div><div class="stat-num" id="statDrive" style="font-size:1rem;padding-top:.6rem">Not connected</div><div class="stat-label">Google Drive</div></div>
+  </div>
+</div>
 
 <!-- SETUP -->
-<section id="setup">
-  <div class="section-inner">
-    <p class="section-tag">Configuration</p>
+<section id="setup" style="margin-bottom:2rem">
+  <div class="section-head">
+    <div class="section-eyebrow">Step 1</div>
     <h2 class="section-title">Wedding <em>details</em></h2>
-    <div class="setup-grid">
-      <div class="panel">
-        <h3>Couple & Event</h3>
-        <div class="form-row">
-          <div class="form-group"><label>Partner 1</label><input id="name1" value="Alexandra"></div>
-          <div class="form-group"><label>Partner 2</label><input id="name2" value="James"></div>
-        </div>
-        <div class="form-group"><label>Wedding Date</label><input type="date" id="weddingDate" value="2025-06-14"></div>
-        <div class="form-group"><label>Venue</label><input id="venue" value="Rosewood Gardens"></div>
-        <div class="form-group"><label>Message on QR card</label><input id="guestMessage" value="Scan to share your photos with us!"></div>
-        <div class="form-group"><label>QR Accent Color</label>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Couple <em>&</em> event</div>
+      <div class="form-row">
+        <div class="form-group"><label>Partner 1</label><input id="name1" value="Alexandra"></div>
+        <div class="form-group"><label>Partner 2</label><input id="name2" value="James"></div>
+      </div>
+      <div class="form-group"><label>Wedding Date</label><input type="date" id="weddingDate" value="2025-06-14"></div>
+      <div class="form-group"><label>Venue</label><input id="venue" value="Rosewood Gardens"></div>
+      <div class="form-group"><label>Message on QR card</label><input id="guestMsg" value="Scan to share your photos with us!"></div>
+      <div class="form-row">
+        <div class="form-group"><label>QR Color</label>
           <select id="qrColor">
-            <option value="#2c2420">Ink</option>
-            <option value="#b8935a">Gold</option>
-            <option value="#5a7060">Sage</option>
-            <option value="#2c4a6e">Navy</option>
+            <option value="#2a2d35">Slate (default)</option>
+            <option value="#c9974a">Gold</option>
+            <option value="#2d5a3d">Forest</option>
+            <option value="#1a3a5c">Navy</option>
           </select>
         </div>
-        <button class="btn-primary" onclick="saveConfig()">Save Details</button>
       </div>
-      <div class="panel">
-        <h3>Your Netlify Site URL</h3>
-        <p style="font-size:.85rem;color:var(--ink-light);line-height:1.7;margin-bottom:1rem">After deploying to Netlify, paste your site URL here. QR codes will link guests to your upload page at this address.</p>
-        <div class="form-group"><label>Netlify URL</label><input id="siteUrl" placeholder="https://your-wedding.netlify.app"></div>
-        <button class="btn-primary" onclick="saveSiteUrl()">Save URL</button>
+      <button class="btn btn-dark" onclick="saveConfig()">Save details</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Your <em>Netlify URL</em></div>
+      <p style="font-size:.83rem;color:var(--slate3);line-height:1.7;margin-bottom:1rem">After deploying, paste your Netlify site URL here. QR codes will link guests to your upload page at this address.</p>
+      <div class="form-group"><label>Netlify URL</label><input id="siteUrl" placeholder="https://your-wedding.netlify.app"></div>
+      <button class="btn btn-dark" onclick="saveSiteUrl()" style="margin-bottom:1rem">Save URL</button>
+      <div class="alert alert-info" style="margin:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Make sure to also add this URL as an authorized redirect URI in Google Cloud Console.
       </div>
     </div>
   </div>
 </section>
 
-<!-- GOOGLE PHOTOS -->
-<section id="google-section">
-  <div class="section-inner">
-    <p class="section-tag">Integration</p>
-    <h2 class="section-title">Connect <em>Google Photos</em></h2>
-    <p class="section-body">Authorize your Google account once — guests can then upload directly to your wedding album without needing a Google account themselves.</p>
+<!-- GOOGLE DRIVE -->
+<section id="drive-section" style="margin-bottom:2rem">
+  <div class="section-head">
+    <div class="section-eyebrow">Step 2</div>
+    <h2 class="section-title">Connect <em>Google Drive</em></h2>
+    <p class="section-body">Authorize once — all guest photos go straight to your chosen Drive folder. No Google account needed for guests.</p>
+  </div>
+  <div class="card">
+    <div class="drive-header">
+      <div class="drive-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 20.5L1 14.5L8 2H16L23 14.5L19.5 20.5H4.5Z" fill="none"/><path d="M1 14.5H23" stroke="#4285F4" stroke-width="1.5"/><path d="M8 2L12.5 9.5L19.5 20.5" stroke="#34A853" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 2L8 2L1 14.5" stroke="#FBBC05" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.5 9.5L8 2" stroke="#EA4335" stroke-width="1.5"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem">Google Drive</div>
+        <div class="pill pill-disconnected" id="driveStatus"><span class="pill-dot"></span><span id="driveStatusText">Not connected</span></div>
+      </div>
+    </div>
 
-    <div class="google-connect-card">
-      <div class="google-header">
-        <div class="google-icon">
-          <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400">Google Photos</div>
-          <div class="status-pill status-disconnected" id="googleStatus"><span class="status-dot"></span><span id="googleStatusText">Not connected</span></div>
-        </div>
+    <!-- Not connected: setup steps -->
+    <div id="driveSetup">
+      <div class="alert alert-info" style="margin-bottom:1.5rem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        One-time setup (~5 min). Uses Google Drive API which works immediately — no verification required.
+      </div>
+      <div class="setup-steps">
+        <div class="setup-step"><div class="step-num"></div><div class="step-body">
+          <h4>Create a Google Cloud project</h4>
+          <p>Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">console.cloud.google.com</a> → New Project → name it <strong>Wedding Photos</strong>. Then go to <strong>APIs & Services → Library</strong>, search for <strong>Google Drive API</strong> and enable it.</p>
+        </div></div>
+        <div class="setup-step"><div class="step-num"></div><div class="step-body">
+          <h4>Configure OAuth consent screen</h4>
+          <p>Go to <strong>APIs & Services → OAuth consent screen</strong> → External → fill in app name "Wedding Photos" + your email. Under Scopes add <code style="background:var(--sand);padding:.1rem .3rem;border-radius:3px;font-size:.75rem">drive.file</code>. Under Test users add your own Google email.</p>
+        </div></div>
+        <div class="setup-step"><div class="step-num"></div><div class="step-body">
+          <h4>Create OAuth 2.0 credentials</h4>
+          <p>Go to <strong>Credentials → Create Credentials → OAuth 2.0 Client ID → Web Application</strong>. Add this exact redirect URI:</p>
+          <div class="mono-box" id="redirectUriDisplay">https://your-site.netlify.app/</div>
+        </div></div>
+        <div class="setup-step"><div class="step-num"></div><div class="step-body">
+          <h4>Enter credentials</h4>
+          <div class="form-row" style="margin-top:.6rem">
+            <div class="form-group"><label>Client ID</label><input id="clientId" placeholder="xxxx.apps.googleusercontent.com" oninput="saveCreds()"></div>
+            <div class="form-group"><label>Client Secret</label><input id="clientSecret" type="password" placeholder="GOCSPX-..." oninput="saveCreds()"></div>
+          </div>
+        </div></div>
+        <div class="setup-step"><div class="step-num"></div><div class="step-body">
+          <h4>Add Netlify environment variables</h4>
+          <p>Netlify → Site Settings → Environment Variables → add these two, then redeploy:</p>
+          <div class="env-table">
+            <span class="env-key">GOOGLE_CLIENT_ID</span> = <span class="env-val">(your Client ID)</span><br>
+            <span class="env-key">GOOGLE_CLIENT_SECRET</span> = <span class="env-val">(your Client Secret)</span>
+          </div>
+        </div></div>
+      </div>
+      <button class="btn btn-gold" onclick="startOAuth()" style="margin-top:1.25rem">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Authorize with Google
+      </button>
+    </div>
+
+    <!-- Connected -->
+    <div id="driveConnected" style="display:none">
+      <div class="alert alert-success" style="margin-bottom:1.25rem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Google Drive connected! Guest photos will upload to your selected folder.
       </div>
 
-      <!-- Setup steps (shown when not connected) -->
-      <div id="step-setup">
-        <div class="alert alert-info">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          One-time setup takes about 5 minutes. After this, guest uploads are fully automatic.
+      <!-- Refresh token save instruction -->
+      <div id="tokenBox" class="alert alert-warn" style="flex-direction:column;align-items:flex-start;gap:.6rem;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;gap:.5rem;font-weight:500">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Save your refresh token to Netlify so guests can upload
         </div>
-        <div class="auth-steps">
-          <div class="auth-step">
-            <div class="auth-step-num"></div>
-            <div>
-              <h4>Create a Google Cloud project</h4>
-              <p>Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">console.cloud.google.com</a> → New Project → name it <strong>Wedding Photos</strong>. Then go to <strong>APIs &amp; Services → Library</strong>, search for <strong>Google Photos Library API</strong> and enable it.</p>
-            </div>
-          </div>
-          <div class="auth-step">
-            <div class="auth-step-num"></div>
-            <div>
-              <h4>Configure OAuth consent screen</h4>
-              <p>Go to <strong>APIs &amp; Services → OAuth consent screen</strong>. Choose <strong>External</strong>, fill in your app name (e.g. "Wedding Photos"), your email, and save. Under <strong>Scopes</strong> add <code style="background:var(--cream);padding:.1rem .35rem;font-size:.78rem">.../auth/photoslibrary</code>. Under <strong>Test users</strong> add your own Google email.</p>
-            </div>
-          </div>
-          <div class="auth-step">
-            <div class="auth-step-num"></div>
-            <div>
-              <h4>Create OAuth 2.0 credentials</h4>
-              <p>Go to <strong>Credentials → Create Credentials → OAuth 2.0 Client ID</strong>. Choose <strong>Web Application</strong>. Under <strong>Authorized redirect URIs</strong> add exactly:</p>
-              <div style="background:var(--cream);border:1px solid var(--blush-dark);padding:.6rem .9rem;font-family:monospace;font-size:.8rem;margin:.5rem 0;word-break:break-all" id="redirectUriDisplay">https://your-site.netlify.app/</div>
-              <p style="margin-top:.4rem">Copy the <strong>Client ID</strong> and <strong>Client Secret</strong> and paste below.</p>
-            </div>
-          </div>
-          <div class="auth-step">
-            <div class="auth-step-num"></div>
-            <div>
-              <h4>Enter your credentials</h4>
-              <div style="margin-top:.6rem">
-                <div class="form-group"><label>Client ID</label><input id="clientId" placeholder="xxxx.apps.googleusercontent.com" oninput="saveCredentials()"></div>
-                <div class="form-group"><label>Client Secret</label><input id="clientSecret" type="password" placeholder="GOCSPX-..." oninput="saveCredentials()"></div>
-              </div>
-            </div>
-          </div>
-          <div class="auth-step">
-            <div class="auth-step-num"></div>
-            <div>
-              <h4>Add environment variables in Netlify</h4>
-              <p>In Netlify go to <strong>Site Settings → Environment Variables</strong> and add these two variables, then redeploy:</p>
-              <div class="env-block">
-                GOOGLE_CLIENT_ID = <em style="color:var(--gold)">(paste your Client ID)</em><br>
-                GOOGLE_CLIENT_SECRET = <em style="color:var(--gold)">(paste your Client Secret)</em>
-              </div>
-            </div>
-          </div>
+        <p style="font-size:.78rem;margin:0">Add this as a Netlify environment variable, then redeploy:</p>
+        <div style="width:100%">
+          <div class="token-label">GOOGLE_REFRESH_TOKEN =</div>
+          <div class="token-reveal" id="refreshTokenDisplay">Loading…</div>
         </div>
-        <button class="btn-primary" onclick="startOAuth()" style="margin-top:1.25rem">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          Authorize with Google
-        </button>
+        <p style="font-size:.75rem;margin:0;color:#7a5a00">Netlify → Site Settings → Environment Variables → Add variable → redeploy via GitHub Desktop</p>
       </div>
 
-      <!-- Connected state -->
-      <div id="step-connected" style="display:none">
-        <div class="alert alert-success">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
-          Google Drive connected! Guest uploads will go directly to your selected Drive folder.
+      <!-- Folder selection -->
+      <div style="margin-bottom:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+          <div style="font-family:'Playfair Display',serif;font-size:1rem">Select a Drive folder</div>
+          <button class="btn btn-ghost" onclick="loadFolders()" style="font-size:.72rem;padding:.35rem .8rem">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/><path d="M3.51,9a9,9,0,0,1,14.85-3.36L23,11M1,13l4.64,4.36A9,9,0,0,0,20.49,15"/></svg>
+            Refresh
+          </button>
         </div>
-        <div id="refreshTokenBox" class="alert alert-info" style="flex-direction:column;align-items:flex-start;gap:.5rem">
-          <div style="display:flex;align-items:center;gap:.5rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong>One more step — save your refresh token to Netlify</strong></div>
-          <p style="font-size:.8rem;margin:0">So guests can upload without you being logged in, add this as a Netlify environment variable:</p>
-          <div style="background:var(--white);border:1px solid #b3d9f5;padding:.5rem .75rem;font-family:monospace;font-size:.75rem;word-break:break-all;width:100%">
-            GOOGLE_REFRESH_TOKEN = <span id="refreshTokenDisplay" style="color:#1a6090">connecting...</span>
-          </div>
-          <p style="font-size:.78rem;margin:0">Go to Netlify → Site Settings → Environment Variables → add this → then redeploy via GitHub Desktop.</p>
-        </div>
-        <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:400;margin-bottom:.75rem">Select or create a wedding album</h4>
         <div style="display:flex;gap:.75rem;margin-bottom:1rem;align-items:flex-end;flex-wrap:wrap">
-          <div class="form-group" style="flex:1;margin:0"><label>New album name</label><input id="newAlbumName" placeholder="Alexandra & James Wedding 2025"></div>
-          <button class="btn-primary" onclick="createAlbum()" style="height:44px;padding:0 1.25rem;white-space:nowrap">Create Album</button>
+          <div class="form-group" style="flex:1;margin:0"><label>New folder name</label><input id="newFolderName" placeholder="Mike & Meghan Wedding 2026"></div>
+          <button class="btn btn-dark" onclick="createFolder()" style="height:42px;padding:0 1.1rem;white-space:nowrap">Create folder</button>
         </div>
-        <p style="font-size:.8rem;color:var(--ink-light);margin-bottom:.75rem">Or select an existing album:</p>
-        <div class="album-grid" id="albumGrid"><div style="font-size:.83rem;color:var(--ink-light)">Loading albums…</div></div>
-        <div id="selectedAlbumInfo" style="display:none" class="alert alert-success">
+        <div class="folder-grid" id="folderGrid"><div style="font-size:.82rem;color:var(--slate3)">Loading folders…</div></div>
+        <div id="selectedFolderInfo" style="display:none" class="alert alert-success">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
-          <span id="selectedAlbumText">Album selected</span>
+          <span id="selectedFolderText">Folder selected</span>
         </div>
-        <button class="btn-danger" onclick="disconnectGoogle()" style="margin-top:1.25rem">Disconnect Google Photos</button>
       </div>
+      <button class="btn btn-danger" onclick="disconnectDrive()">Disconnect Google Drive</button>
     </div>
   </div>
 </section>
 
 <!-- QR CODES -->
-<section id="qr-section">
-  <div class="section-inner">
-    <p class="section-tag">QR Codes</p>
-    <h2 class="section-title">Table <em>cards</em></h2>
-    <div class="qr-grid">
-      <div class="qr-controls">
-        <div class="panel">
-          <h3>QR Settings</h3>
-          <div class="form-group"><label>Table Number</label>
-            <select id="tableSelect" onchange="updateQR()">
-              <option value="1">Table 1</option><option value="2">Table 2</option><option value="3">Table 3</option>
-              <option value="4">Table 4</option><option value="5">Table 5</option><option value="6">Table 6</option>
-              <option value="7">Table 7</option><option value="8">Table 8</option><option value="9">Table 9</option>
-              <option value="10">Table 10</option><option value="11">Table 11</option><option value="12">Table 12</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Size</label>
-            <select id="qrSize" onchange="updateQR()">
-              <option value="180">Small</option>
-              <option value="220" selected>Medium</option>
-              <option value="280">Large</option>
-            </select>
-          </div>
+<section id="qr-section" style="margin-bottom:2rem">
+  <div class="section-head">
+    <div class="section-eyebrow">Step 3</div>
+    <h2 class="section-title">QR <em>cards</em></h2>
+    <p class="section-body">Generate a card for each table. Guests scan it on their phone and can upload photos instantly.</p>
+  </div>
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title">Card <em>settings</em></div>
+        <div class="form-group"><label>Table number</label>
+          <select id="tableSelect" onchange="updateQR()">
+            <option value="1">Table 1</option><option value="2">Table 2</option><option value="3">Table 3</option>
+            <option value="4">Table 4</option><option value="5">Table 5</option><option value="6">Table 6</option>
+            <option value="7">Table 7</option><option value="8">Table 8</option><option value="9">Table 9</option>
+            <option value="10">Table 10</option><option value="11">Table 11</option><option value="12">Table 12</option>
+            <option value="13">Table 13</option><option value="14">Table 14</option><option value="15">Table 15</option>
+          </select>
         </div>
-        <div class="qr-actions">
-          <button class="btn-primary" onclick="window.print()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Print This Card
-          </button>
-          <button class="btn-secondary" onclick="downloadQR()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download QR PNG
-          </button>
+        <div class="form-group"><label>QR size</label>
+          <select id="qrSize" onchange="updateQR()">
+            <option value="180">Small</option>
+            <option value="220" selected>Medium</option>
+            <option value="280">Large</option>
+          </select>
         </div>
       </div>
-      <div class="qr-card-preview" id="qrCardPreview">
-        <div class="qr-card-couple" id="previewCouple">Alexandra <em>&</em> James</div>
-        <div class="qr-card-date" id="previewDate">June 14, 2025 · Rosewood Gardens</div>
-        <div id="qrcode"></div>
-        <div class="qr-card-message" id="previewMessage">"Scan to share your photos with us!"</div>
-        <div class="qr-table-badge" id="previewTable">Table 1</div>
+      <div class="qr-actions" style="display:flex;flex-direction:column;gap:.6rem">
+        <button class="btn btn-dark" onclick="window.print()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print this card
+        </button>
+        <button class="btn btn-outline" onclick="downloadQR()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download QR PNG
+        </button>
       </div>
+    </div>
+    <div class="qr-preview" id="qrCardPreview">
+      <div class="qr-names" id="previewNames">Alexandra <em>&</em> James</div>
+      <div class="qr-date" id="previewDate">June 14, 2025 · Rosewood Gardens</div>
+      <div id="qrcode"></div>
+      <div class="qr-msg" id="previewMsg">"Scan to share your photos with us!"</div>
+      <div class="qr-table-tag" id="previewTable">Table 1</div>
     </div>
   </div>
 </section>
 
-<!-- TABLE CARDS -->
-<section id="table-cards">
-  <div class="section-inner">
-    <p class="section-tag">Manage Tables</p>
+<!-- TABLE MANAGEMENT -->
+<section id="table-section" style="margin-bottom:2rem">
+  <div class="section-head">
+    <div class="section-eyebrow">Step 4</div>
     <h2 class="section-title">All <em>tables</em></h2>
-    <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap">
-      <div class="form-group" style="margin:0"><label>Number of tables</label><input type="number" id="tableCount" value="10" min="1" max="50" style="max-width:120px"></div>
-      <button class="btn-primary" onclick="renderTables()">Generate</button>
-      <button class="btn-secondary" onclick="window.print()">Print All</button>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap">
+      <div class="form-group" style="margin:0"><label>Number of tables</label><input type="number" id="tableCount" value="10" min="1" max="50" style="max-width:100px"></div>
+      <button class="btn btn-dark" onclick="renderTables()">Generate</button>
+      <button class="btn btn-outline" onclick="window.print()">Print all</button>
     </div>
     <div class="tables-grid" id="tablesGrid"></div>
   </div>
 </section>
 
 <!-- GALLERY -->
-<section id="gallery">
-  <div class="section-inner">
-    <p class="section-tag">Live Gallery</p>
-    <h2 class="section-title">Shared <em>moments</em></h2>
+<section id="gallery-section" style="margin-bottom:2rem">
+  <div class="section-head">
+    <div class="section-eyebrow">Live updates</div>
+    <h2 class="section-title">Guest <em>gallery</em></h2>
+    <p class="section-body">All photos guests share appear here in real time. Click any photo to view it full size.</p>
+  </div>
+  <div class="card" style="padding-bottom:1rem">
     <div class="gallery-toolbar">
-      <div></div>
-      <button class="btn-secondary" style="font-size:.74rem;padding:.5rem 1rem" onclick="loadGallery()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/><path d="M3.51,9a9,9,0,0,1,14.85-3.36L23,11M1,13l4.64,4.36A9,9,0,0,0,20.49,15"/></svg>
-        Refresh
-      </button>
+      <div class="gallery-count" id="galleryCount">Connect Google Drive to see photos</div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-outline" onclick="loadGallery()" style="font-size:.75rem;padding:.5rem 1rem">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/><path d="M3.51,9a9,9,0,0,1,14.85-3.36L23,11M1,13l4.64,4.36A9,9,0,0,0,20.49,15"/></svg>
+          Refresh
+        </button>
+        <a id="driveFolderLink" href="#" target="_blank" class="btn btn-ghost" style="font-size:.75rem;padding:.5rem 1rem;display:none">
+          Open in Drive ↗
+        </a>
+      </div>
     </div>
-    <div id="galleryGrid" class="gallery-grid">
-      <div class="gallery-empty" style="grid-column:1/-1">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-        <p style="font-size:.83rem">Connect Google Photos and select an album, then click Refresh</p>
+    <div id="galleryContainer">
+      <div class="gallery-empty">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        <p style="font-size:.85rem">Connect Google Drive and select a folder,<br>then click Refresh to see photos</p>
       </div>
     </div>
   </div>
 </section>
 
+</div><!-- /page -->
+
 <footer>
-  <p>Made with love for <span id="footerNames">Alexandra & James</span> · <span id="footerDate">2025</span></p>
+  Made with love for <strong id="footerNames">Alexandra & James</strong> · <span id="footerDate">2025</span>
 </footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-meta" id="lightboxMeta"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const STATE_KEY = 'wedding_admin_v2';
+// ─── STATE ──────────────────────────────────────────
+const SK = 'wphotos_v3';
 let S = {
-  name1:'Alexandra',name2:'James',date:'2025-06-14',venue:'Rosewood Gardens',
-  message:'Scan to share your photos with us!',qrColor:'#2c2420',
-  siteUrl:'',clientId:'',clientSecret:'',
-  accessToken:'',refreshToken:'',tokenExpiry:0,
-  albumId:'',albumTitle:'',googleConnected:false
+  name1:'Alexandra', name2:'James', date:'2025-06-14', venue:'Rosewood Gardens',
+  msg:'Scan to share your photos with us!', qrColor:'#2a2d35',
+  siteUrl:'', clientId:'', clientSecret:'',
+  accessToken:'', refreshToken:'', tokenExpiry:0,
+  folderId:'', folderName:'', googleConnected:false
 };
-function loadS(){try{const d=localStorage.getItem(STATE_KEY);if(d)S={...S,...JSON.parse(d)}}catch{}}
-function saveS(){try{localStorage.setItem(STATE_KEY,JSON.stringify(S))}catch{}}
+function ls(){try{const d=localStorage.getItem(SK);if(d)S={...S,...JSON.parse(d)}}catch{}}
+function ss(){try{localStorage.setItem(SK,JSON.stringify(S))}catch{}}
 
-function formatDate(d){
+// ─── UTILS ──────────────────────────────────────────
+function fmtDate(d){
   if(!d)return'';const[y,m,day]=d.split('-');
   const mo=['January','February','March','April','May','June','July','August','September','October','November','December'];
   return mo[parseInt(m)-1]+' '+parseInt(day)+', '+y;
 }
 function toast(msg,err=false){
   const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show'+(err?' error':'');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg;t.className='toast show'+(err?' err':'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);
 }
 function api(path,body){
   return fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
 }
+function qs(id){return document.getElementById(id)}
 
+// ─── CONFIG ─────────────────────────────────────────
 function saveConfig(){
-  S.name1=document.getElementById('name1').value||'Partner 1';
-  S.name2=document.getElementById('name2').value||'Partner 2';
-  S.date=document.getElementById('weddingDate').value;
-  S.venue=document.getElementById('venue').value;
-  S.message=document.getElementById('guestMessage').value;
-  S.qrColor=document.getElementById('qrColor').value;
-  saveS();updatePreview();updateQR();
-  document.getElementById('footerNames').textContent=S.name1+' & '+S.name2;
-  document.getElementById('footerDate').textContent=formatDate(S.date);
+  S.name1=qs('name1').value||'Partner 1';
+  S.name2=qs('name2').value||'Partner 2';
+  S.date=qs('weddingDate').value;
+  S.venue=qs('venue').value;
+  S.msg=qs('guestMsg').value;
+  S.qrColor=qs('qrColor').value;
+  ss();updateHero();updateQR();
   toast('Details saved!');
 }
 function saveSiteUrl(){
-  S.siteUrl=document.getElementById('siteUrl').value.replace(/\/$/,'');
-  saveS();updateQR();
-  document.getElementById('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
+  S.siteUrl=qs('siteUrl').value.replace(/\/$/,'');
+  ss();updateQR();
+  qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
   toast('URL saved!');
 }
-function saveCredentials(){
-  S.clientId=document.getElementById('clientId').value;
-  S.clientSecret=document.getElementById('clientSecret').value;
-  saveS();
+function saveCreds(){
+  S.clientId=qs('clientId').value;
+  S.clientSecret=qs('clientSecret').value;
+  ss();
+}
+function updateHero(){
+  qs('heroTitle').innerHTML=S.name1+' <em>&</em> '+S.name2;
+  qs('heroSub').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'')+' — Guests scan QR codes at their table and share photos directly to your Google Drive.';
+  qs('footerNames').textContent=S.name1+' & '+S.name2;
+  qs('footerDate').textContent=fmtDate(S.date)||new Date().getFullYear();
+  qs('statDrive').textContent=S.googleConnected?'Connected':'Not connected';
 }
 
+// ─── QR ─────────────────────────────────────────────
 function buildUploadUrl(table){
   const base=S.siteUrl||window.location.origin;
-  const p=new URLSearchParams({table,n1:S.name1,n2:S.name2,date:formatDate(S.date),venue:S.venue,msg:S.message});
-  if(S.albumId)p.set('album',S.albumId);
+  const p=new URLSearchParams({table,n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue,msg:S.msg});
+  if(S.folderId)p.set('fid',S.folderId);
+  if(S.folderName)p.set('fname',S.folderName);
   return base+'/upload.html?'+p.toString();
 }
-function updatePreview(){
-  const table=document.getElementById('tableSelect').value;
-  document.getElementById('previewCouple').innerHTML=S.name1+' <em>&</em> '+S.name2;
-  document.getElementById('previewDate').textContent=formatDate(S.date)+' · '+S.venue;
-  document.getElementById('previewMessage').textContent='"'+S.message+'"';
-  document.getElementById('previewTable').textContent='Table '+table;
-}
 function updateQR(){
-  const table=document.getElementById('tableSelect').value;
-  const size=parseInt(document.getElementById('qrSize').value);
-  updatePreview();
-  const c=document.getElementById('qrcode');c.innerHTML='';
-  new QRCode(c,{text:buildUploadUrl(table),width:size,height:size,colorDark:S.qrColor,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  const table=qs('tableSelect').value;
+  const size=parseInt(qs('qrSize').value)||220;
+  qs('previewNames').innerHTML=S.name1+' <em>&</em> '+S.name2;
+  qs('previewDate').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'');
+  qs('previewMsg').textContent='"'+S.msg+'"';
+  qs('previewTable').textContent='Table '+table;
+  const c=qs('qrcode');c.innerHTML='';
+  try{
+    new QRCode(c,{text:buildUploadUrl(table),width:size,height:size,colorDark:S.qrColor,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){c.innerHTML='<p style="font-size:.75rem;color:var(--slate3);padding:2rem">Set your Netlify URL to generate QR codes</p>';}
 }
 function downloadQR(){
   const canvas=document.querySelector('#qrcode canvas');
   if(!canvas){toast('Generate QR first',true);return;}
   const a=document.createElement('a');
-  a.download='wedding-qr-table-'+document.getElementById('tableSelect').value+'.png';
+  a.download='table-'+qs('tableSelect').value+'-qr.png';
   a.href=canvas.toDataURL('image/png');a.click();toast('Downloaded!');
 }
 function renderTables(){
-  const count=parseInt(document.getElementById('tableCount').value)||10;
-  const grid=document.getElementById('tablesGrid');grid.innerHTML='';
+  const count=parseInt(qs('tableCount').value)||10;
+  const grid=qs('tablesGrid');grid.innerHTML='';
   for(let i=1;i<=count;i++){
-    const c=document.createElement('div');c.className='table-card';
-    c.onclick=()=>c.classList.toggle('selected');
-    c.innerHTML=`<div class="table-card-num">${i}</div><div class="table-card-label">Table</div><div class="table-card-check"></div>`;
+    const c=document.createElement('div');c.className='table-tile';
+    c.onclick=()=>c.classList.toggle('sel');
+    c.innerHTML=`<div class="table-num">${i}</div><div class="table-lbl">Table</div><div class="table-check"></div>`;
     grid.appendChild(c);
   }
+  qs('statTables').textContent=count;
+  toast(count+' tables ready');
 }
 
-function updateGoogleUI(){
+// ─── OAUTH ──────────────────────────────────────────
+function updateDriveUI(){
   const ok=S.googleConnected&&!!S.accessToken;
-  document.getElementById('googleStatus').className='status-pill '+(ok?'status-connected':'status-disconnected');
-  document.getElementById('googleStatusText').textContent=ok?'Connected':'Not connected';
-  document.getElementById('step-setup').style.display=ok?'none':'block';
-  document.getElementById('step-connected').style.display=ok?'block':'none';
-  if(ok){loadAlbums();
-    const el=document.getElementById('refreshTokenDisplay');
-    if(el&&S.refreshToken)el.textContent=S.refreshToken;
+  qs('driveStatus').className='pill '+(ok?'pill-connected':'pill-disconnected');
+  qs('driveStatusText').textContent=ok?'Connected':'Not connected';
+  qs('driveSetup').style.display=ok?'none':'block';
+  qs('driveConnected').style.display=ok?'block':'none';
+  qs('statDrive').textContent=ok?'Connected':'Not connected';
+  if(ok){
+    const rt=qs('refreshTokenDisplay');
+    if(rt)rt.textContent=S.refreshToken||'(already saved — reconnect to see again)';
+    loadFolders();
   }
 }
 function startOAuth(){
   if(!S.clientId){toast('Enter your Client ID first',true);return;}
-  if(!S.siteUrl){toast('Save your Netlify site URL first',true);return;}
-  const redirectUri=S.siteUrl+'/';
-  const params=new URLSearchParams({
-    client_id:S.clientId,redirect_uri:redirectUri,response_type:'code',
+  if(!S.siteUrl){toast('Save your Netlify URL first',true);return;}
+  const p=new URLSearchParams({
+    client_id:S.clientId,redirect_uri:S.siteUrl+'/',response_type:'code',
     scope:'https://www.googleapis.com/auth/drive.file',
     access_type:'offline',prompt:'consent'
   });
-  window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
+  window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+p.toString();
 }
-async function handleOAuthCallback(){
-  const params=new URLSearchParams(window.location.search);
-  const code=params.get('code');
-  if(!code)return;
+async function handleCallback(){
+  const p=new URLSearchParams(window.location.search);
+  const code=p.get('code');if(!code)return;
   window.history.replaceState({},'',window.location.pathname);
-  toast('Connecting to Google Photos…');
+  toast('Connecting to Google Drive…');
   try{
     const r=await api('/api/auth',{code,redirect_uri:window.location.origin+'/'});
     if(r.error){toast('Auth error: '+r.error,true);return;}
     S.accessToken=r.access_token;S.refreshToken=r.refresh_token;
     S.tokenExpiry=Date.now()+(r.expires_in*1000);S.googleConnected=true;
-    saveS();updateGoogleUI();toast('Google Drive connected!');
-    // Show refresh token so user can save it to Netlify
-    const el=document.getElementById('refreshTokenDisplay');
-    if(el)el.textContent=r.refresh_token||'(not returned — may already be saved)';
-  }catch(e){toast('Failed: '+e.message,true);}
+    ss();updateDriveUI();toast('Google Drive connected!');
+  }catch(e){toast('Connection failed: '+e.message,true);}
 }
 async function ensureToken(){
   if(!S.accessToken)return null;
   if(Date.now()<S.tokenExpiry-60000)return S.accessToken;
   if(!S.refreshToken)return null;
   try{
-    const r=await api('/api/refresh',{refresh_token:S.refreshToken});
-    if(r.error){disconnectGoogle();return null;}
-    S.accessToken=r.access_token;S.tokenExpiry=Date.now()+(r.expires_in*1000);saveS();
+    const r=await api('/api/auth',{refresh_token:S.refreshToken,grant_type:'refresh_token'});
+    if(r.access_token){S.accessToken=r.access_token;S.tokenExpiry=Date.now()+(r.expires_in||3600)*1000;ss();}
     return S.accessToken;
-  }catch{return null;}
+  }catch{return S.accessToken;}
 }
-function disconnectGoogle(){
-  S.accessToken='';S.refreshToken='';S.tokenExpiry=0;S.googleConnected=false;S.albumId='';S.albumTitle='';
-  saveS();updateGoogleUI();toast('Disconnected');
-}
-async function loadAlbums(){
-  const token=await ensureToken();if(!token)return;
-  const grid=document.getElementById('albumGrid');
-  grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">Loading Drive folders…</div>';
-  const r=await api('/api/albums',{access_token:token,action:'list'});
-  if(r.error){grid.innerHTML='<div style="font-size:.83rem;color:var(--error)">'+r.error+'</div>';return;}
-  const albums=r.albums||[];
-  if(!albums.length){grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">No folders yet — create one above.</div>';return;}
-  grid.innerHTML='';
-  albums.forEach(a=>{
-    const d=document.createElement('div');d.className='album-item'+(a.id===S.albumId?' selected':'');
-    d.onclick=()=>selectAlbum(a.id,a.title);
-    d.innerHTML=`<div class="album-item-title">${a.title||'Untitled'}</div><div class="album-item-count">Google Drive folder</div>`;
-    grid.appendChild(d);
-  });
-  if(S.albumId)showSelectedAlbum();
-}
-async function createAlbum(){
-  const title=document.getElementById('newAlbumName').value.trim();
-  if(!title){toast('Enter a folder name',true);return;}
-  const token=await ensureToken();if(!token){toast('Not connected',true);return;}
-  try{
-    const r=await api('/api/albums',{access_token:token,action:'create',folder_title:title});
-    if(r.error){toast('Error: '+r.error,true);return;}
-    const album=r.album||r;
-    if(!album.id){toast('Could not create folder',true);return;}
-    selectAlbum(album.id,album.title||title);
-    toast('Folder "'+title+'" created in Google Drive!');
-    loadAlbums();
-  }catch(e){toast('Failed: '+e.message,true);}
-}
-function selectAlbum(id,title){
-  S.albumId=id;S.albumTitle=title;saveS();showSelectedAlbum();
-  document.querySelectorAll('.album-item').forEach(el=>el.classList.remove('selected'));
-  document.querySelectorAll('.album-item').forEach(el=>{if(el.querySelector('.album-item-title')?.textContent===title)el.classList.add('selected');});
-  updateQR();toast('Folder selected: '+title);
-}
-function showSelectedAlbum(){
-  const el=document.getElementById('selectedAlbumInfo');el.style.display='flex';
-  document.getElementById('selectedAlbumText').textContent='Active Drive folder: '+S.albumTitle;
-}
-async function loadGallery(){
-  if(!S.googleConnected||!S.albumId){toast('Connect Google Drive and select a folder first',true);return;}
-  const token=await ensureToken();if(!token)return;
-  const grid=document.getElementById('galleryGrid');
-  grid.innerHTML='<div class="gallery-empty" style="grid-column:1/-1"><p style="font-size:.83rem">Loading photos…</p></div>';
-  try{
-    const query=encodeURIComponent(`'${S.albumId}' in parents and mimeType contains 'image/' and trashed=false`);
-    const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,description,thumbnailLink,webViewLink)&pageSize=50&orderBy=createdTime desc`,{
-      headers:{'Authorization':'Bearer '+token}
-    });
-    const data=await res.json();
-    const items=data.files||[];
-    if(!items.length){
-      grid.innerHTML='<div class="gallery-empty" style="grid-column:1/-1"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><p style="font-size:.83rem">No photos yet — they\'ll appear as guests share them</p></div>';
-      return;
-    }
-    grid.innerHTML='';
-    items.forEach(item=>{
-      const d=document.createElement('div');d.className='gallery-item';
-      const thumb=item.thumbnailLink||'';
-      d.innerHTML=`${thumb?`<img src="${thumb.replace('=s220','=s400')}" loading="lazy" alt="">`:'<div style="width:100%;height:100%;background:var(--blush);display:flex;align-items:center;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>'}<div class="gallery-item-overlay"><div class="gallery-item-meta">${item.description||item.name}</div></div>`;
-      if(item.webViewLink)d.onclick=()=>window.open(item.webViewLink,'_blank');
-      grid.appendChild(d);
-    });
-    toast(items.length+' photos loaded');
-  }catch(e){toast('Gallery error: '+e.message,true);}
+function disconnectDrive(){
+  Object.assign(S,{accessToken:'',refreshToken:'',tokenExpiry:0,googleConnected:false,folderId:'',folderName:''});
+  ss();updateDriveUI();
+  qs('selectedFolderInfo').style.display='none';
+  toast('Disconnected from Google Drive');
 }
 
+// ─── FOLDERS ────────────────────────────────────────
+async function loadFolders(){
+  const token=await ensureToken();if(!token)return;
+  const grid=qs('folderGrid');
+  grid.innerHTML='<div style="font-size:.82rem;color:var(--slate3)">Loading…</div>';
+  const r=await api('/api/drive',{access_token:token,action:'list_folders'});
+  if(r.error){grid.innerHTML='<div style="font-size:.82rem;color:var(--red)">'+r.error+'</div>';return;}
+  const folders=r.folders||[];
+  if(!folders.length){grid.innerHTML='<div style="font-size:.82rem;color:var(--slate3)">No folders yet — create one above.</div>';return;}
+  grid.innerHTML='';
+  folders.forEach(f=>{
+    const d=document.createElement('div');
+    d.className='folder-item'+(f.id===S.folderId?' selected':'');
+    d.onclick=()=>selectFolder(f.id,f.name);
+    d.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><div class="folder-name">${f.name}</div><div class="folder-check"></div>`;
+    grid.appendChild(d);
+  });
+  if(S.folderId)showSelectedFolder();
+}
+async function createFolder(){
+  const name=qs('newFolderName').value.trim();
+  if(!name){toast('Enter a folder name',true);return;}
+  const token=await ensureToken();if(!token){toast('Not connected',true);return;}
+  toast('Creating folder…');
+  const r=await api('/api/drive',{access_token:token,action:'create_folder',folder_title:name});
+  if(r.error){toast('Error: '+r.error,true);return;}
+  const f=r.folder;
+  if(!f||!f.id){toast('Could not create folder',true);return;}
+  selectFolder(f.id,f.name||name);
+  toast('Folder "'+name+'" created in Google Drive!');
+  loadFolders();
+}
+function selectFolder(id,name){
+  S.folderId=id;S.folderName=name;ss();showSelectedFolder();
+  document.querySelectorAll('.folder-item').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('.folder-item').forEach(el=>{
+    if(el.querySelector('.folder-name')?.textContent===name)el.classList.add('selected');
+  });
+  updateQR();
+  const link=qs('driveFolderLink');
+  if(link){link.href=`https://drive.google.com/drive/folders/${id}`;link.style.display='inline-flex';}
+  toast('Folder selected: '+name);
+}
+function showSelectedFolder(){
+  const el=qs('selectedFolderInfo');el.style.display='flex';
+  qs('selectedFolderText').textContent='Active folder: '+S.folderName;
+  const link=qs('driveFolderLink');
+  if(link&&S.folderId){link.href=`https://drive.google.com/drive/folders/${S.folderId}`;link.style.display='inline-flex';}
+}
+
+// ─── GALLERY ────────────────────────────────────────
+async function loadGallery(){
+  if(!S.googleConnected||!S.folderId){toast('Connect Google Drive and select a folder first',true);return;}
+  const token=await ensureToken();if(!token)return;
+  const container=qs('galleryContainer');
+  container.innerHTML='<div class="gallery-empty"><div class="spin" style="color:var(--slate3);width:20px;height:20px;border-color:rgba(0,0,0,.1);border-top-color:var(--gold)"></div><p style="font-size:.85rem;margin-top:.5rem">Loading photos…</p></div>';
+  try{
+    const r=await api('/api/drive',{access_token:token,action:'list_photos',folder_id:S.folderId});
+    if(r.error){container.innerHTML='<div class="gallery-empty"><p style="font-size:.85rem;color:var(--red)">Error: '+r.error+'</p></div>';return;}
+    const photos=r.photos||[];
+    qs('galleryCount').textContent=photos.length?photos.length+' photo'+(photos.length>1?'s':'')+' shared':'No photos yet';
+    qs('statPhotos').textContent=photos.length;
+    if(!photos.length){
+      container.innerHTML='<div class="gallery-empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><p style="font-size:.85rem">No photos yet — they\'ll appear here as guests upload them</p></div>';
+      return;
+    }
+    container.innerHTML='<div class="gallery-masonry" id="galleryMasonry"></div>';
+    const masonry=qs('galleryMasonry');
+    photos.forEach((photo,i)=>{
+      const div=document.createElement('div');
+      div.className='gallery-photo';
+      const thumb=photo.thumbnailLink?(photo.thumbnailLink.replace(/=s\d+$/,'=s600')):'';
+      const meta=photo.description||photo.name||'';
+      if(thumb){
+        div.innerHTML=`<img src="${thumb}" loading="lazy" alt=""><div class="gallery-photo-overlay"><div class="gallery-photo-meta">${meta}</div></div>`;
+        div.onclick=()=>openLightbox(thumb.replace(/=s\d+$/,'=s1200'),meta);
+      }else{
+        div.innerHTML=`<div style="aspect-ratio:1;background:var(--sand2);display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>`;
+        if(photo.webViewLink)div.onclick=()=>window.open(photo.webViewLink,'_blank');
+      }
+      masonry.appendChild(div);
+    });
+    toast(photos.length+' photos loaded');
+  }catch(e){container.innerHTML='<div class="gallery-empty"><p style="font-size:.85rem;color:var(--red)">Error: '+e.message+'</p></div>';}
+}
+
+function openLightbox(src,meta){
+  qs('lightboxImg').src=src;
+  qs('lightboxMeta').textContent=meta;
+  qs('lightbox').classList.add('open');
+}
+function closeLightbox(){qs('lightbox').classList.remove('open');}
+
+// ─── INIT ────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  loadS();
-  document.getElementById('name1').value=S.name1;
-  document.getElementById('name2').value=S.name2;
-  document.getElementById('weddingDate').value=S.date;
-  document.getElementById('venue').value=S.venue;
-  document.getElementById('guestMessage').value=S.message;
-  document.getElementById('qrColor').value=S.qrColor;
-  document.getElementById('siteUrl').value=S.siteUrl;
-  document.getElementById('clientId').value=S.clientId;
-  document.getElementById('clientSecret').value=S.clientSecret;
-  document.getElementById('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  document.getElementById('footerNames').textContent=S.name1+' & '+S.name2;
-  document.getElementById('footerDate').textContent=formatDate(S.date);
-  renderTables();updateQR();updateGoogleUI();handleOAuthCallback();
+  ls();
+  qs('name1').value=S.name1;qs('name2').value=S.name2;
+  qs('weddingDate').value=S.date;qs('venue').value=S.venue;
+  qs('guestMsg').value=S.msg;qs('qrColor').value=S.qrColor;
+  qs('siteUrl').value=S.siteUrl;qs('clientId').value=S.clientId;
+  qs('clientSecret').value=S.clientSecret;
+  qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
+  updateHero();renderTables();updateQR();updateDriveUI();handleCallback();
+  // Auto-load gallery if connected
+  if(S.googleConnected&&S.folderId)loadGallery();
 });
 </script>
 </body>
