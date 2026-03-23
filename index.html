@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Wedding — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --blush:#f5e6e0;--blush-dark:#e8c4b4;--champagne:#f0e6d0;--gold:#b8935a;--gold-light:#d4b07a;
+    --cream:#faf7f2;--ink:#2c2420;--ink-light:#6b5a52;--white:#ffffff;--shadow:rgba(44,36,32,0.08);
+    --success:#2d7a2d;--success-bg:#eaf5ea;--error:#c0392b;--error-bg:#fdf0ef;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Jost',sans-serif;font-weight:300;background:var(--cream);color:var(--ink);min-height:100vh}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:1.5rem 3rem;background:var(--white);border-bottom:1px solid var(--blush-dark);position:sticky;top:0;z-index:100}
+  .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;letter-spacing:.08em;color:var(--ink)}
+  .nav-logo span{color:var(--gold);font-style:italic}
+  nav ul{display:flex;gap:2rem;list-style:none}
+  nav a{text-decoration:none;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);transition:color .2s}
+  nav a:hover{color:var(--gold)}
+  section{padding:4rem 3rem}
+  .section-inner{max-width:1100px;margin:0 auto}
+  .section-tag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+  .section-title{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--ink);margin-bottom:.75rem}
+  .section-title em{font-style:italic;color:var(--gold)}
+  .section-body{font-size:.92rem;line-height:1.9;color:var(--ink-light);max-width:560px;margin-bottom:2.5rem}
+  .btn-primary{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--white);padding:.85rem 1.6rem;font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s}
+  .btn-primary:hover{background:var(--gold)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;background:var(--ink)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:.6rem;background:transparent;color:var(--ink);padding:.85rem 1.6rem;font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--ink);cursor:pointer;transition:all .2s;text-decoration:none}
+  .btn-secondary:hover{background:var(--ink);color:var(--white)}
+  .btn-danger{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--error);padding:.65rem 1.2rem;font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--error);cursor:pointer;transition:all .2s}
+  .btn-danger:hover{background:var(--error);color:var(--white)}
+  .form-group{margin-bottom:1.25rem}
+  .form-group label{display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-light);margin-bottom:.4rem}
+  .form-group input,.form-group select{width:100%;padding:.75rem 1rem;border:1px solid var(--blush-dark);background:var(--white);font-family:'Jost',sans-serif;font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s}
+  .form-group input:focus,.form-group select:focus{border-color:var(--gold)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .panel{background:var(--white);border:1px solid var(--blush-dark);padding:2rem;margin-bottom:1.5rem}
+  .panel h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;margin-bottom:1.25rem;color:var(--ink)}
+  .status-pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:2px}
+  .status-dot{width:6px;height:6px;border-radius:50%}
+  .status-connected{background:var(--success-bg);color:var(--success)}
+  .status-connected .status-dot{background:var(--success)}
+  .status-disconnected{background:var(--blush);color:var(--ink-light)}
+  .status-disconnected .status-dot{background:var(--ink-light)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  #google-section{background:var(--blush)}
+  .google-connect-card{background:var(--white);border:1px solid var(--blush-dark);padding:2rem;max-width:680px}
+  .google-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+  .google-icon{width:44px;height:44px;background:var(--cream);border:1px solid var(--blush-dark);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .google-icon svg{width:26px;height:26px}
+  .auth-steps{counter-reset:asteps}
+  .auth-step{counter-increment:asteps;display:grid;grid-template-columns:28px 1fr;gap:.75rem;padding:1rem 0;border-bottom:1px solid var(--blush)}
+  .auth-step:last-child{border:none}
+  .auth-step-num{width:28px;height:28px;border-radius:50%;background:var(--blush);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);flex-shrink:0}
+  .auth-step-num::after{content:counter(asteps)}
+  .auth-step h4{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:400;margin-bottom:.3rem}
+  .auth-step p{font-size:.82rem;line-height:1.7;color:var(--ink-light)}
+  .env-block{background:var(--cream);border:1px solid var(--blush-dark);padding:.75rem 1rem;font-family:monospace;font-size:.78rem;line-height:2;margin:.6rem 0}
+  .album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin:1rem 0}
+  .album-item{border:1px solid var(--blush-dark);padding:1rem;cursor:pointer;transition:all .2s;text-align:center}
+  .album-item:hover{border-color:var(--gold)}
+  .album-item.selected{border-color:var(--gold);background:var(--blush)}
+  .album-item-title{font-size:.82rem;color:var(--ink);margin-top:.3rem}
+  .album-item-count{font-size:.72rem;color:var(--ink-light)}
+  #qr-section{background:var(--champagne)}
+  .qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+  .qr-card-preview{background:var(--white);border:1px solid var(--blush-dark);padding:2.5rem 2rem;text-align:center;position:relative;box-shadow:0 8px 40px var(--shadow)}
+  .qr-card-preview::before{content:'';position:absolute;top:10px;left:10px;right:10px;bottom:10px;border:1px solid var(--blush);pointer-events:none}
+  .qr-card-couple{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--ink);margin-bottom:.3rem}
+  .qr-card-couple em{font-style:italic;color:var(--gold)}
+  .qr-card-date{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light);margin-bottom:1.25rem}
+  #qrcode{display:flex;justify-content:center;margin:1.25rem 0}
+  #qrcode canvas,#qrcode img{border:6px solid var(--white)!important;box-shadow:0 0 0 1px var(--blush-dark)}
+  .qr-card-message{font-size:.78rem;line-height:1.7;color:var(--ink-light);font-style:italic;margin-top:.75rem}
+  .qr-table-badge{display:inline-block;background:var(--blush);color:var(--gold);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;padding:.35rem .9rem;margin-top:.75rem;border:1px solid var(--blush-dark)}
+  .qr-actions{display:flex;flex-direction:column;gap:.75rem;margin-top:1.5rem}
+  #table-cards{background:var(--white)}
+  .tables-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1.25rem;margin-bottom:1.5rem}
+  .table-card{background:var(--cream);border:1px solid var(--blush-dark);padding:1.25rem;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+  .table-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .table-card.selected{border-color:var(--gold);background:var(--blush)}
+  .table-card-num{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--gold)}
+  .table-card-label{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light)}
+  .table-card-check{position:absolute;top:6px;right:6px;width:14px;height:14px;background:var(--gold);border-radius:50%;display:none}
+  .table-card.selected .table-card-check{display:block}
+  #setup{background:var(--white)}
+  .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+  #gallery{background:var(--cream)}
+  .gallery-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+  .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px}
+  .gallery-item{aspect-ratio:1;overflow:hidden;position:relative;background:var(--blush);cursor:pointer}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+  .gallery-item:hover img{transform:scale(1.05)}
+  .gallery-item-overlay{position:absolute;inset:0;background:rgba(44,36,32,0);transition:background .3s;display:flex;align-items:flex-end;padding:.75rem}
+  .gallery-item:hover .gallery-item-overlay{background:rgba(44,36,32,0.4)}
+  .gallery-item-meta{color:var(--white);opacity:0;transition:opacity .3s;font-size:.72rem}
+  .gallery-item:hover .gallery-item-meta{opacity:1}
+  .gallery-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;border:1px dashed var(--blush-dark);color:var(--ink-light);gap:.75rem}
+  .alert{padding:.85rem 1rem;font-size:.83rem;line-height:1.6;display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1rem}
+  .alert svg{flex-shrink:0;margin-top:1px}
+  .alert-info{background:#e8f4fd;color:#1a6090;border:1px solid #b3d9f5}
+  .alert-success{background:var(--success-bg);color:var(--success);border:1px solid #b8e0b8}
+  .alert-error{background:var(--error-bg);color:var(--error);border:1px solid #f5c6c2}
+  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:var(--white);padding:.9rem 1.4rem;font-size:.8rem;z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;letter-spacing:.05em}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.error{background:var(--error)}
+  footer{background:var(--ink);color:rgba(255,255,255,.45);text-align:center;padding:1.75rem;font-size:.75rem;letter-spacing:.1em}
+  footer span{color:var(--gold-light)}
+  @media(max-width:900px){.setup-grid,.qr-grid{grid-template-columns:1fr}nav ul{gap:1rem}nav{padding:1rem 1.5rem}section{padding:2.5rem 1.5rem}.form-row{grid-template-columns:1fr}}
+  @media print{nav,#setup,#google-section,#gallery,#table-cards,.qr-actions,.qr-controls{display:none!important}.qr-grid{grid-template-columns:1fr}.qr-card-preview{box-shadow:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Moments <span>& Memories</span></div>
+  <ul>
+    <li><a href="#setup">Details</a></li>
+    <li><a href="#google-section">Google Photos</a></li>
+    <li><a href="#qr-section">QR Codes</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+  </ul>
+</nav>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="section-inner">
+    <p class="section-tag">Configuration</p>
+    <h2 class="section-title">Wedding <em>details</em></h2>
+    <div class="setup-grid">
+      <div class="panel">
+        <h3>Couple & Event</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Partner 1</label><input id="name1" value="Alexandra"></div>
+          <div class="form-group"><label>Partner 2</label><input id="name2" value="James"></div>
+        </div>
+        <div class="form-group"><label>Wedding Date</label><input type="date" id="weddingDate" value="2025-06-14"></div>
+        <div class="form-group"><label>Venue</label><input id="venue" value="Rosewood Gardens"></div>
+        <div class="form-group"><label>Message on QR card</label><input id="guestMessage" value="Scan to share your photos with us!"></div>
+        <div class="form-group"><label>QR Accent Color</label>
+          <select id="qrColor">
+            <option value="#2c2420">Ink</option>
+            <option value="#b8935a">Gold</option>
+            <option value="#5a7060">Sage</option>
+            <option value="#2c4a6e">Navy</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="saveConfig()">Save Details</button>
+      </div>
+      <div class="panel">
+        <h3>Your Netlify Site URL</h3>
+        <p style="font-size:.85rem;color:var(--ink-light);line-height:1.7;margin-bottom:1rem">After deploying to Netlify, paste your site URL here. QR codes will link guests to your upload page at this address.</p>
+        <div class="form-group"><label>Netlify URL</label><input id="siteUrl" placeholder="https://your-wedding.netlify.app"></div>
+        <button class="btn-primary" onclick="saveSiteUrl()">Save URL</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOOGLE PHOTOS -->
+<section id="google-section">
+  <div class="section-inner">
+    <p class="section-tag">Integration</p>
+    <h2 class="section-title">Connect <em>Google Photos</em></h2>
+    <p class="section-body">Authorize your Google account once — guests can then upload directly to your wedding album without needing a Google account themselves.</p>
+
+    <div class="google-connect-card">
+      <div class="google-header">
+        <div class="google-icon">
+          <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400">Google Photos</div>
+          <div class="status-pill status-disconnected" id="googleStatus"><span class="status-dot"></span><span id="googleStatusText">Not connected</span></div>
+        </div>
+      </div>
+
+      <!-- Setup steps (shown when not connected) -->
+      <div id="step-setup">
+        <div class="alert alert-info">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          One-time setup takes about 5 minutes. After this, guest uploads are fully automatic.
+        </div>
+        <div class="auth-steps">
+          <div class="auth-step">
+            <div class="auth-step-num"></div>
+            <div>
+              <h4>Create a Google Cloud project</h4>
+              <p>Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">console.cloud.google.com</a> → New Project → name it <strong>Wedding Photos</strong>. Then go to <strong>APIs &amp; Services → Library</strong>, search for <strong>Google Photos Library API</strong> and enable it.</p>
+            </div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num"></div>
+            <div>
+              <h4>Configure OAuth consent screen</h4>
+              <p>Go to <strong>APIs &amp; Services → OAuth consent screen</strong>. Choose <strong>External</strong>, fill in your app name (e.g. "Wedding Photos"), your email, and save. Under <strong>Scopes</strong> add <code style="background:var(--cream);padding:.1rem .35rem;font-size:.78rem">.../auth/photoslibrary</code>. Under <strong>Test users</strong> add your own Google email.</p>
+            </div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num"></div>
+            <div>
+              <h4>Create OAuth 2.0 credentials</h4>
+              <p>Go to <strong>Credentials → Create Credentials → OAuth 2.0 Client ID</strong>. Choose <strong>Web Application</strong>. Under <strong>Authorized redirect URIs</strong> add exactly:</p>
+              <div style="background:var(--cream);border:1px solid var(--blush-dark);padding:.6rem .9rem;font-family:monospace;font-size:.8rem;margin:.5rem 0;word-break:break-all" id="redirectUriDisplay">https://your-site.netlify.app/</div>
+              <p style="margin-top:.4rem">Copy the <strong>Client ID</strong> and <strong>Client Secret</strong> and paste below.</p>
+            </div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num"></div>
+            <div>
+              <h4>Enter your credentials</h4>
+              <div style="margin-top:.6rem">
+                <div class="form-group"><label>Client ID</label><input id="clientId" placeholder="xxxx.apps.googleusercontent.com" oninput="saveCredentials()"></div>
+                <div class="form-group"><label>Client Secret</label><input id="clientSecret" type="password" placeholder="GOCSPX-..." oninput="saveCredentials()"></div>
+              </div>
+            </div>
+          </div>
+          <div class="auth-step">
+            <div class="auth-step-num"></div>
+            <div>
+              <h4>Add environment variables in Netlify</h4>
+              <p>In Netlify go to <strong>Site Settings → Environment Variables</strong> and add these two variables, then redeploy:</p>
+              <div class="env-block">
+                GOOGLE_CLIENT_ID = <em style="color:var(--gold)">(paste your Client ID)</em><br>
+                GOOGLE_CLIENT_SECRET = <em style="color:var(--gold)">(paste your Client Secret)</em>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="startOAuth()" style="margin-top:1.25rem">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Authorize with Google
+        </button>
+      </div>
+
+      <!-- Connected state -->
+      <div id="step-connected" style="display:none">
+        <div class="alert alert-success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+          Google Photos connected! Guest uploads will go directly to your selected album.
+        </div>
+        <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:400;margin-bottom:.75rem">Select or create a wedding album</h4>
+        <div style="display:flex;gap:.75rem;margin-bottom:1rem;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="flex:1;margin:0"><label>New album name</label><input id="newAlbumName" placeholder="Alexandra & James Wedding 2025"></div>
+          <button class="btn-primary" onclick="createAlbum()" style="height:44px;padding:0 1.25rem;white-space:nowrap">Create Album</button>
+        </div>
+        <p style="font-size:.8rem;color:var(--ink-light);margin-bottom:.75rem">Or select an existing album:</p>
+        <div class="album-grid" id="albumGrid"><div style="font-size:.83rem;color:var(--ink-light)">Loading albums…</div></div>
+        <div id="selectedAlbumInfo" style="display:none" class="alert alert-success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+          <span id="selectedAlbumText">Album selected</span>
+        </div>
+        <button class="btn-danger" onclick="disconnectGoogle()" style="margin-top:1.25rem">Disconnect Google Photos</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QR CODES -->
+<section id="qr-section">
+  <div class="section-inner">
+    <p class="section-tag">QR Codes</p>
+    <h2 class="section-title">Table <em>cards</em></h2>
+    <div class="qr-grid">
+      <div class="qr-controls">
+        <div class="panel">
+          <h3>QR Settings</h3>
+          <div class="form-group"><label>Table Number</label>
+            <select id="tableSelect" onchange="updateQR()">
+              <option value="1">Table 1</option><option value="2">Table 2</option><option value="3">Table 3</option>
+              <option value="4">Table 4</option><option value="5">Table 5</option><option value="6">Table 6</option>
+              <option value="7">Table 7</option><option value="8">Table 8</option><option value="9">Table 9</option>
+              <option value="10">Table 10</option><option value="11">Table 11</option><option value="12">Table 12</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Size</label>
+            <select id="qrSize" onchange="updateQR()">
+              <option value="180">Small</option>
+              <option value="220" selected>Medium</option>
+              <option value="280">Large</option>
+            </select>
+          </div>
+        </div>
+        <div class="qr-actions">
+          <button class="btn-primary" onclick="window.print()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print This Card
+          </button>
+          <button class="btn-secondary" onclick="downloadQR()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download QR PNG
+          </button>
+        </div>
+      </div>
+      <div class="qr-card-preview" id="qrCardPreview">
+        <div class="qr-card-couple" id="previewCouple">Alexandra <em>&</em> James</div>
+        <div class="qr-card-date" id="previewDate">June 14, 2025 · Rosewood Gardens</div>
+        <div id="qrcode"></div>
+        <div class="qr-card-message" id="previewMessage">"Scan to share your photos with us!"</div>
+        <div class="qr-table-badge" id="previewTable">Table 1</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLE CARDS -->
+<section id="table-cards">
+  <div class="section-inner">
+    <p class="section-tag">Manage Tables</p>
+    <h2 class="section-title">All <em>tables</em></h2>
+    <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap">
+      <div class="form-group" style="margin:0"><label>Number of tables</label><input type="number" id="tableCount" value="10" min="1" max="50" style="max-width:120px"></div>
+      <button class="btn-primary" onclick="renderTables()">Generate</button>
+      <button class="btn-secondary" onclick="window.print()">Print All</button>
+    </div>
+    <div class="tables-grid" id="tablesGrid"></div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-inner">
+    <p class="section-tag">Live Gallery</p>
+    <h2 class="section-title">Shared <em>moments</em></h2>
+    <div class="gallery-toolbar">
+      <div></div>
+      <button class="btn-secondary" style="font-size:.74rem;padding:.5rem 1rem" onclick="loadGallery()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/><path d="M3.51,9a9,9,0,0,1,14.85-3.36L23,11M1,13l4.64,4.36A9,9,0,0,0,20.49,15"/></svg>
+        Refresh
+      </button>
+    </div>
+    <div id="galleryGrid" class="gallery-grid">
+      <div class="gallery-empty" style="grid-column:1/-1">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        <p style="font-size:.83rem">Connect Google Photos and select an album, then click Refresh</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Made with love for <span id="footerNames">Alexandra & James</span> · <span id="footerDate">2025</span></p>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const STATE_KEY = 'wedding_admin_v2';
+let S = {
+  name1:'Alexandra',name2:'James',date:'2025-06-14',venue:'Rosewood Gardens',
+  message:'Scan to share your photos with us!',qrColor:'#2c2420',
+  siteUrl:'',clientId:'',clientSecret:'',
+  accessToken:'',refreshToken:'',tokenExpiry:0,
+  albumId:'',albumTitle:'',googleConnected:false
+};
+function loadS(){try{const d=localStorage.getItem(STATE_KEY);if(d)S={...S,...JSON.parse(d)}}catch{}}
+function saveS(){try{localStorage.setItem(STATE_KEY,JSON.stringify(S))}catch{}}
+
+function formatDate(d){
+  if(!d)return'';const[y,m,day]=d.split('-');
+  const mo=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return mo[parseInt(m)-1]+' '+parseInt(day)+', '+y;
+}
+function toast(msg,err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(err?' error':'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+function api(path,body){
+  return fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+}
+
+function saveConfig(){
+  S.name1=document.getElementById('name1').value||'Partner 1';
+  S.name2=document.getElementById('name2').value||'Partner 2';
+  S.date=document.getElementById('weddingDate').value;
+  S.venue=document.getElementById('venue').value;
+  S.message=document.getElementById('guestMessage').value;
+  S.qrColor=document.getElementById('qrColor').value;
+  saveS();updatePreview();updateQR();
+  document.getElementById('footerNames').textContent=S.name1+' & '+S.name2;
+  document.getElementById('footerDate').textContent=formatDate(S.date);
+  toast('Details saved!');
+}
+function saveSiteUrl(){
+  S.siteUrl=document.getElementById('siteUrl').value.replace(/\/$/,'');
+  saveS();updateQR();
+  document.getElementById('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
+  toast('URL saved!');
+}
+function saveCredentials(){
+  S.clientId=document.getElementById('clientId').value;
+  S.clientSecret=document.getElementById('clientSecret').value;
+  saveS();
+}
+
+function buildUploadUrl(table){
+  const base=S.siteUrl||window.location.origin;
+  const p=new URLSearchParams({table,n1:S.name1,n2:S.name2,date:formatDate(S.date),venue:S.venue,msg:S.message});
+  if(S.albumId)p.set('album',S.albumId);
+  return base+'/upload.html?'+p.toString();
+}
+function updatePreview(){
+  const table=document.getElementById('tableSelect').value;
+  document.getElementById('previewCouple').innerHTML=S.name1+' <em>&</em> '+S.name2;
+  document.getElementById('previewDate').textContent=formatDate(S.date)+' · '+S.venue;
+  document.getElementById('previewMessage').textContent='"'+S.message+'"';
+  document.getElementById('previewTable').textContent='Table '+table;
+}
+function updateQR(){
+  const table=document.getElementById('tableSelect').value;
+  const size=parseInt(document.getElementById('qrSize').value);
+  updatePreview();
+  const c=document.getElementById('qrcode');c.innerHTML='';
+  new QRCode(c,{text:buildUploadUrl(table),width:size,height:size,colorDark:S.qrColor,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+}
+function downloadQR(){
+  const canvas=document.querySelector('#qrcode canvas');
+  if(!canvas){toast('Generate QR first',true);return;}
+  const a=document.createElement('a');
+  a.download='wedding-qr-table-'+document.getElementById('tableSelect').value+'.png';
+  a.href=canvas.toDataURL('image/png');a.click();toast('Downloaded!');
+}
+function renderTables(){
+  const count=parseInt(document.getElementById('tableCount').value)||10;
+  const grid=document.getElementById('tablesGrid');grid.innerHTML='';
+  for(let i=1;i<=count;i++){
+    const c=document.createElement('div');c.className='table-card';
+    c.onclick=()=>c.classList.toggle('selected');
+    c.innerHTML=`<div class="table-card-num">${i}</div><div class="table-card-label">Table</div><div class="table-card-check"></div>`;
+    grid.appendChild(c);
+  }
+}
+
+function updateGoogleUI(){
+  const ok=S.googleConnected&&!!S.accessToken;
+  document.getElementById('googleStatus').className='status-pill '+(ok?'status-connected':'status-disconnected');
+  document.getElementById('googleStatusText').textContent=ok?'Connected':'Not connected';
+  document.getElementById('step-setup').style.display=ok?'none':'block';
+  document.getElementById('step-connected').style.display=ok?'block':'none';
+  if(ok)loadAlbums();
+}
+function startOAuth(){
+  if(!S.clientId){toast('Enter your Client ID first',true);return;}
+  if(!S.siteUrl){toast('Save your Netlify site URL first',true);return;}
+  const redirectUri=S.siteUrl+'/';
+  const params=new URLSearchParams({
+    client_id:S.clientId,redirect_uri:redirectUri,response_type:'code',
+    scope:'https://www.googleapis.com/auth/photoslibrary',
+    access_type:'offline',prompt:'consent'
+  });
+  window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
+}
+async function handleOAuthCallback(){
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  if(!code)return;
+  window.history.replaceState({},'',window.location.pathname);
+  toast('Connecting to Google Photos…');
+  try{
+    const r=await api('/api/auth',{code,redirect_uri:window.location.origin+'/'});
+    if(r.error){toast('Auth error: '+r.error,true);return;}
+    S.accessToken=r.access_token;S.refreshToken=r.refresh_token;
+    S.tokenExpiry=Date.now()+(r.expires_in*1000);S.googleConnected=true;
+    saveS();updateGoogleUI();toast('Google Photos connected!');
+  }catch(e){toast('Failed: '+e.message,true);}
+}
+async function ensureToken(){
+  if(!S.accessToken)return null;
+  if(Date.now()<S.tokenExpiry-60000)return S.accessToken;
+  if(!S.refreshToken)return null;
+  try{
+    const r=await api('/api/refresh',{refresh_token:S.refreshToken});
+    if(r.error){disconnectGoogle();return null;}
+    S.accessToken=r.access_token;S.tokenExpiry=Date.now()+(r.expires_in*1000);saveS();
+    return S.accessToken;
+  }catch{return null;}
+}
+function disconnectGoogle(){
+  S.accessToken='';S.refreshToken='';S.tokenExpiry=0;S.googleConnected=false;S.albumId='';S.albumTitle='';
+  saveS();updateGoogleUI();toast('Disconnected');
+}
+async function loadAlbums(){
+  const token=await ensureToken();if(!token)return;
+  const grid=document.getElementById('albumGrid');
+  grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">Loading…</div>';
+  const r=await api('/api/albums',{access_token:token,action:'list'});
+  if(r.error){grid.innerHTML='<div style="font-size:.83rem;color:var(--error)">'+r.error+'</div>';return;}
+  const albums=r.albums||[];
+  if(!albums.length){grid.innerHTML='<div style="font-size:.83rem;color:var(--ink-light)">No albums yet — create one above.</div>';return;}
+  grid.innerHTML='';
+  albums.forEach(a=>{
+    const d=document.createElement('div');d.className='album-item'+(a.id===S.albumId?' selected':'');
+    d.onclick=()=>selectAlbum(a.id,a.title);
+    d.innerHTML=`<div class="album-item-title">${a.title||'Untitled'}</div><div class="album-item-count">${a.mediaItemsCount||0} items</div>`;
+    grid.appendChild(d);
+  });
+  if(S.albumId)showSelectedAlbum();
+}
+async function createAlbum(){
+  const title=document.getElementById('newAlbumName').value.trim();
+  if(!title){toast('Enter an album name',true);return;}
+  const token=await ensureToken();if(!token){toast('Not connected',true);return;}
+  const r=await api('/api/albums',{access_token:token,action:'create',album_title:title});
+  if(r.error){toast('Error: '+r.error,true);return;}
+  selectAlbum(r.album.id,r.album.title);toast('Album created!');loadAlbums();
+}
+function selectAlbum(id,title){
+  S.albumId=id;S.albumTitle=title;saveS();showSelectedAlbum();
+  document.querySelectorAll('.album-item').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('.album-item').forEach(el=>{if(el.querySelector('.album-item-title')?.textContent===title)el.classList.add('selected');});
+  updateQR();toast('Album: '+title);
+}
+function showSelectedAlbum(){
+  const el=document.getElementById('selectedAlbumInfo');el.style.display='flex';
+  document.getElementById('selectedAlbumText').textContent='Active album: '+S.albumTitle;
+}
+async function loadGallery(){
+  if(!S.googleConnected||!S.albumId){toast('Connect Google Photos and select an album first',true);return;}
+  const token=await ensureToken();if(!token)return;
+  const grid=document.getElementById('galleryGrid');
+  grid.innerHTML='<div class="gallery-empty" style="grid-column:1/-1"><p style="font-size:.83rem">Loading photos…</p></div>';
+  try{
+    const res=await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:search',{
+      method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({albumId:S.albumId,pageSize:50})
+    });
+    const data=await res.json();
+    const items=data.mediaItems||[];
+    if(!items.length){
+      grid.innerHTML='<div class="gallery-empty" style="grid-column:1/-1"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg><p style="font-size:.83rem">No photos yet — they\'ll appear as guests share them</p></div>';
+      return;
+    }
+    grid.innerHTML='';
+    items.forEach(item=>{
+      const d=document.createElement('div');d.className='gallery-item';
+      d.innerHTML=`<img src="${item.baseUrl}=w400-h400-c" loading="lazy" alt=""><div class="gallery-item-overlay"><div class="gallery-item-meta">${item.description||''}</div></div>`;
+      grid.appendChild(d);
+    });
+    toast(items.length+' photos loaded');
+  }catch(e){toast('Gallery error: '+e.message,true);}
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  loadS();
+  document.getElementById('name1').value=S.name1;
+  document.getElementById('name2').value=S.name2;
+  document.getElementById('weddingDate').value=S.date;
+  document.getElementById('venue').value=S.venue;
+  document.getElementById('guestMessage').value=S.message;
+  document.getElementById('qrColor').value=S.qrColor;
+  document.getElementById('siteUrl').value=S.siteUrl;
+  document.getElementById('clientId').value=S.clientId;
+  document.getElementById('clientSecret').value=S.clientSecret;
+  document.getElementById('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
+  document.getElementById('footerNames').textContent=S.name1+' & '+S.name2;
+  document.getElementById('footerDate').textContent=formatDate(S.date);
+  renderTables();updateQR();updateGoogleUI();handleOAuthCallback();
+});
+</script>
+</body>
+</html>
