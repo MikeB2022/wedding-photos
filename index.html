@@ -492,8 +492,38 @@ let S = {
   accessToken:'', refreshToken:'', tokenExpiry:0,
   folderId:'', folderName:'', googleConnected:false
 };
-function ls(){try{const d=localStorage.getItem(SK);if(d)S={...S,...JSON.parse(d)}}catch{}}
-function ss(){try{localStorage.setItem(SK,JSON.stringify(S))}catch{}}
+
+// Tokens/secrets stay local only — everything else syncs to server
+const LOCAL_ONLY = ['accessToken','refreshToken','tokenExpiry','clientSecret'];
+
+function lsLoad(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);LOCAL_ONLY.forEach(k=>{if(p[k])S[k]=p[k];});}}catch{}}
+function lsSave(){try{const local={};LOCAL_ONLY.forEach(k=>{if(S[k])local[k]=S[k];});localStorage.setItem(SK,JSON.stringify(local));}catch{}}
+
+async function serverLoad(){
+  try{
+    const r=await fetch('/api/config',{method:'GET'});
+    const d=await r.json();
+    if(d.config&&Object.keys(d.config).length>0){
+      S={...S,...d.config};
+      return true;
+    }
+  }catch(e){console.warn('Could not load config from server:',e);}
+  return false;
+}
+
+async function serverSave(){
+  try{
+    const safe={};
+    Object.keys(S).forEach(k=>{if(!LOCAL_ONLY.includes(k))safe[k]=S[k];});
+    await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(safe)});
+  }catch(e){console.warn('Could not save config to server:',e);}
+}
+
+// Save to both server and localStorage
+async function ss(){
+  lsSave();
+  await serverSave();
+}
 
 // ─── UTILS ──────────────────────────────────────────
 function fmtDate(d){
@@ -512,21 +542,21 @@ function api(path,body){
 function qs(id){return document.getElementById(id)}
 
 // ─── CONFIG ─────────────────────────────────────────
-function saveConfig(){
+async function saveConfig(){
   S.name1=qs('name1').value||'Partner 1';
   S.name2=qs('name2').value||'Partner 2';
   S.date=qs('weddingDate').value;
   S.venue=qs('venue').value;
   S.msg=qs('guestMsg').value;
   S.qrColor=qs('qrColor').value;
-  ss();updateHero();updateQR();
-  toast('Details saved!');
+  await ss();updateHero();updateQR();
+  toast('Details saved — synced to server!');
 }
-function saveSiteUrl(){
+async function saveSiteUrl(){
   S.siteUrl=qs('siteUrl').value.replace(/\/$/,'');
-  ss();updateQR();updateGalleryLink();
+  await ss();updateQR();updateGalleryLink();
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  toast('URL saved!');
+  toast('URL saved — synced to server!');
 }
 function saveCreds(){
   S.clientId=qs('clientId').value;
@@ -748,17 +778,27 @@ function openLightbox(src,meta){
 function closeLightbox(){qs('lightbox').classList.remove('open');}
 
 // ─── INIT ────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  ls();
+function populateForm(){
   qs('name1').value=S.name1;qs('name2').value=S.name2;
   qs('weddingDate').value=S.date;qs('venue').value=S.venue;
   qs('guestMsg').value=S.msg;qs('qrColor').value=S.qrColor;
   qs('siteUrl').value=S.siteUrl;qs('clientId').value=S.clientId;
   qs('clientSecret').value=S.clientSecret;
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  updateHero();renderTables();updateQR();updateDriveUI();handleCallback();updateGalleryLink();
-  // Auto-load gallery if connected
+  updateHero();renderTables();updateQR();updateDriveUI();updateGalleryLink();
+}
+
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // 1. Load local-only tokens first
+  lsLoad();
+  // 2. Load the rest from server (works on any device)
+  const loaded = await serverLoad();
+  // 3. Merge local tokens back in case serverLoad overwrote them
+  lsLoad();
+  populateForm();
+  handleCallback();
   if(S.googleConnected&&S.folderId)loadGallery();
+  if(!loaded) toast('Tip: save your details to sync them across devices');
 });
 </script>
 </body>

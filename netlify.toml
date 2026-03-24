@@ -16,3 +16,8 @@
   from = "/api/drive"
   to = "/.netlify/functions/drive"
   status = 200
+
+[[redirects]]
+  from = "/api/config"
+  to = "/.netlify/functions/config"
+  status = 200
