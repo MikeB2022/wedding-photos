@@ -266,7 +266,14 @@ footer strong{color:var(--gold)}
   <div class="card">
     <div class="drive-header">
       <div class="drive-icon">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 20.5L1 14.5L8 2H16L23 14.5L19.5 20.5H4.5Z" fill="none"/><path d="M1 14.5H23" stroke="#4285F4" stroke-width="1.5"/><path d="M8 2L12.5 9.5L19.5 20.5" stroke="#34A853" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 2L8 2L1 14.5" stroke="#FBBC05" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.5 9.5L8 2" stroke="#EA4335" stroke-width="1.5"/></svg>
+        <svg viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:25px">
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9 9 0 000 53h27.5z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57.5c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.5z" fill="#ea4335"/>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="M59.8 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+          <path d="M73.4 26.5l-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 53h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+        </svg>
       </div>
       <div>
         <div style="font-family:'Playfair Display',serif;font-size:1rem">Google Drive</div>
@@ -276,9 +283,13 @@ footer strong{color:var(--gold)}
 
     <!-- Not connected: setup steps -->
     <div id="driveSetup">
-      <div class="alert alert-info" style="margin-bottom:1.5rem">
+      <div class="alert alert-info" style="margin-bottom:1rem">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         One-time setup (~5 min). Uses Google Drive API which works immediately — no verification required.
+      </div>
+      <div class="alert" style="background:var(--gold3);color:#5a3e00;border:1px solid var(--gold2);margin-bottom:1.5rem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Already set this up before? Just click <strong>Authorize with Google</strong> below — your credentials are saved and it reconnects in seconds. Authorization is stored per-browser for security.</span>
       </div>
       <div class="setup-steps">
         <div class="setup-step"><div class="step-num"></div><div class="step-body">
@@ -430,7 +441,7 @@ footer strong{color:var(--gold)}
         </div>
       </div>
       <div class="qr-preview" id="gbQrPreview">
-        <div class="qr-names">Alexandra <em>&</em> James</div>
+        <div class="qr-names" id="gbPreviewNames">Alexandra <em>&</em> James</div>
         <div class="qr-date" id="gbPreviewDate">June 14, 2025 · Rosewood Gardens</div>
         <div id="qrcode-gb"></div>
         <div class="qr-msg">"Leave us a photo & a message!"</div>
@@ -628,6 +639,7 @@ function updateQR(){
   if(qs('previewNames'))qs('previewNames').innerHTML=S.name1+' <em>&</em> '+S.name2;
   if(qs('previewDate'))qs('previewDate').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'');
   if(qs('previewMsg'))qs('previewMsg').textContent='"'+S.msg+'"';
+  if(qs('gbPreviewNames'))qs('gbPreviewNames').innerHTML=S.name1+' <em>&</em> '+S.name2;
   if(qs('gbPreviewDate'))qs('gbPreviewDate').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'');
   // Photo QR
   const c=qs('qrcode');
@@ -644,20 +656,41 @@ function updateQR(){
     catch(e){ gb.innerHTML='<p style="font-size:.75rem;color:var(--slate3);padding:2rem">Set your Netlify URL to generate QR codes</p>'; }
   }
 }
-function printCard(type){
-  const el=qs(type==='guestbook'?'gbQrPreview':'photoQrPreview');
-  if(!el)return;
-  const w=window.open('','_blank');
-  w.document.write('<html><head><title>QR Card</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f0e6;font-family:serif}@media print{body{margin:0}}</style></head><body>'+el.outerHTML+'</body></html>');
-  w.document.close();setTimeout(()=>w.print(),500);
+async function captureCard(type){
+  const elId = type==='guestbook' ? 'gbQrPreview' : 'photoQrPreview';
+  const el = qs(elId);
+  if(!el){toast('Card not found',true);return null;}
+  // Use html2canvas to capture the card exactly as rendered
+  if(typeof html2canvas === 'undefined'){
+    toast('Capture library loading, please try again in a moment',true);return null;
+  }
+  const canvas = await html2canvas(el, {
+    scale: 3,
+    backgroundColor: '#ffffff',
+    useCORS: true,
+    logging: false
+  });
+  return canvas;
 }
-function downloadQR(type){
-  const id=type==='guestbook'?'qrcode-gb':'qrcode';
-  const canvas=document.querySelector('#'+id+' canvas');
-  if(!canvas){toast('Generate QR first',true);return;}
-  const a=document.createElement('a');
-  a.download=(type==='guestbook'?'guest-book':'photo-sharing')+'-qr.png';
-  a.href=canvas.toDataURL('image/png');a.click();toast('Downloaded!');
+async function printCard(type){
+  toast('Preparing card…');
+  const canvas = await captureCard(type);
+  if(!canvas)return;
+  const img = canvas.toDataURL('image/png');
+  const w = window.open('','_blank');
+  w.document.write('<html><head><title>QR Card</title><style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f0e6}img{max-width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1)}@media print{body{background:white;margin:0}img{box-shadow:none;max-width:90vw}}</style></head><body><img src="'+img+'"></body></html>');
+  w.document.close();
+  setTimeout(()=>w.print(),800);
+}
+async function downloadQR(type){
+  toast('Capturing card…');
+  const canvas = await captureCard(type);
+  if(!canvas)return;
+  const a = document.createElement('a');
+  a.download = (type==='guestbook'?'guest-book-card':'photo-sharing-card')+'.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  toast('Card downloaded!');
 }
 
 // ─── OAUTH ──────────────────────────────────────────
@@ -831,5 +864,6 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   if(!loaded) toast('Tip: save your details to sync them across devices');
 });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
