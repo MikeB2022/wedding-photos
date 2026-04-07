@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guest Book — Admin View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sand:#f7f0e6;--sand2:#ede4d6;--sand3:#d9ccba;
+  --slate:#2a2d35;--slate2:#3e4250;--slate3:#6b6f7c;
+  --gold:#c9974a;--gold2:#e8b96a;--gold3:#f5ddb0;
+  --white:#ffffff;--black:#1a1c22;
+  --green:#2d5a3d;--green-bg:#e8f0eb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--sand);color:var(--slate);min-height:100vh}
+
+/* HEADER */
+.header{background:var(--slate);padding:2.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(201,151,74,.08)}
+.header::after{content:'';position:absolute;bottom:-100px;left:-60px;width:360px;height:360px;border-radius:50%;border:1px solid rgba(201,151,74,.06)}
+.header-tag{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold2);margin-bottom:.6rem}
+.header-icon{width:48px;height:48px;border-radius:50%;background:rgba(201,151,74,.12);border:1px solid rgba(201,151,74,.2);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem}
+.header-icon svg{width:22px;height:22px;color:var(--gold2)}
+.header-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:400;color:var(--white);line-height:1.15}
+.header-title em{font-style:italic;color:var(--gold2)}
+.header-sub{font-size:.75rem;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-top:.4rem}
+.header-count{display:inline-flex;align-items:center;gap:.5rem;background:rgba(201,151,74,.12);border:1px solid rgba(201,151,74,.2);border-radius:20px;padding:.4rem 1rem;font-size:.75rem;color:var(--gold2);margin-top:1rem}
+
+/* TOOLBAR */
+.toolbar{background:var(--white);border-bottom:1px solid var(--sand3);padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.toolbar-left{font-size:.78rem;color:var(--slate3)}
+.toolbar-right{display:flex;gap:.5rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;font-family:'DM Sans',sans-serif;font-size:.75rem;letter-spacing:.06em;padding:.5rem 1rem;border-radius:6px;cursor:pointer;border:none;transition:all .18s;text-decoration:none}
+.btn-slate{background:var(--slate);color:var(--white)}.btn-slate:hover{background:var(--slate2)}
+.btn-outline{background:transparent;color:var(--slate);border:1px solid var(--sand3)}.btn-outline:hover{border-color:var(--slate)}
+.btn-gold{background:var(--gold);color:var(--white)}.btn-gold:hover{background:var(--gold2);color:var(--slate)}
+
+/* MAIN */
+.page{max-width:1200px;margin:0 auto;padding:2.5rem 1.5rem}
+
+/* ENTRY CARDS */
+.entries-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem}
+@media(max-width:700px){.entries-grid{grid-template-columns:1fr}}
+
+.entry-card{background:var(--white);border:1px solid var(--sand3);border-radius:12px;overflow:hidden;transition:box-shadow .2s;position:relative}
+.entry-card:hover{box-shadow:0 8px 32px rgba(42,45,53,.08)}
+
+.entry-photo{width:100%;aspect-ratio:1;overflow:hidden;background:var(--sand2);position:relative;cursor:pointer}
+.entry-photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.entry-card:hover .entry-photo img{transform:scale(1.03)}
+.entry-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--sand2)}
+.entry-photo-placeholder svg{opacity:.2}
+
+.entry-body{padding:1.25rem 1.5rem}
+.entry-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;color:var(--slate);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.entry-name svg{color:var(--gold);flex-shrink:0}
+.entry-message{font-size:.88rem;line-height:1.75;color:var(--slate2);font-style:italic;border-left:2px solid var(--gold3);padding-left:.85rem;margin-bottom:.75rem}
+.entry-message::before{content:'\201C';font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--gold2);line-height:0;vertical-align:-.35em;margin-right:.15em}
+.entry-message::after{content:'\201D';font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--gold2);line-height:0;vertical-align:-.35em;margin-left:.1em}
+.entry-meta{font-size:.68rem;letter-spacing:.06em;color:var(--slate3)}
+
+/* ENTRY NUMBER BADGE */
+.entry-num{position:absolute;top:.75rem;left:.75rem;background:rgba(42,45,53,.6);color:var(--white);font-size:.65rem;letter-spacing:.1em;padding:.2rem .55rem;border-radius:4px;backdrop-filter:blur(4px)}
+
+/* STATES */
+.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:1rem;text-align:center;padding:3rem}
+.state-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:400;color:var(--slate)}
+.state-sub{font-size:.85rem;color:var(--slate3);line-height:1.7;max-width:380px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:36px;height:36px;border:3px solid var(--sand3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+
+/* LIGHTBOX */
+.lb{position:fixed;inset:0;background:rgba(20,22,28,.96);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+.lb.open{display:flex}
+.lb-img{max-width:min(90vw,700px);max-height:80vh;object-fit:contain;border-radius:8px;display:block}
+.lb-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.1);color:var(--white);border:none;border-radius:50%;width:40px;height:40px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.lb-close:hover{background:rgba(255,255,255,.2)}
+.lb-info{margin-top:1.25rem;text-align:center;max-width:500px}
+.lb-name{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--white);margin-bottom:.5rem}
+.lb-msg{font-size:.85rem;line-height:1.7;color:rgba(255,255,255,.65);font-style:italic}
+.lb-nav{display:flex;gap:1rem;margin-top:1rem;justify-content:center}
+.lb-nav button{background:rgba(255,255,255,.1);color:var(--white);border:none;border-radius:6px;padding:.5rem 1.25rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;transition:background .2s}
+.lb-nav button:hover{background:rgba(255,255,255,.2)}
+.lb-counter{font-size:.7rem;color:rgba(255,255,255,.35);margin-top:.5rem;letter-spacing:.08em}
+
+/* PRINT */
+@media print{
+  .toolbar,.lb{display:none!important}
+  .header{background:#2a2d35!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .entry-card{break-inside:avoid;box-shadow:none!important}
+  .page{padding:1rem}
+}
+
+/* EMPTY MESSAGE */
+.no-message{font-size:.82rem;color:var(--slate3);font-style:italic;padding:.5rem 0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-tag">Admin View — Private</div>
+  <div class="header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </div>
+  <h1 class="header-title" id="headerTitle">Guest <em>Book</em></h1>
+  <div class="header-sub" id="headerSub">Mike & Meghan · 2026</div>
+  <div class="header-count" id="headerCount">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span id="entryCount">Loading…</span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-left" id="toolbarInfo">Loading guest book entries…</div>
+  <div class="toolbar-right">
+    <button class="btn btn-outline" onclick="loadEntries()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/><path d="M3.51,9a9,9,0,0,1,14.85-3.36L23,11M1,13l4.64,4.36A9,9,0,0,0,20.49,15"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-outline" onclick="window.print()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print
+    </button>
+    <a class="btn btn-slate" href="index.html">← Admin</a>
+  </div>
+</div>
+
+<div class="page">
+  <div id="content">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-title">Loading entries…</div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb">
+  <button class="lb-close" onclick="closeLb()">×</button>
+  <img class="lb-img" id="lbImg" src="" alt="">
+  <div class="lb-info">
+    <div class="lb-name" id="lbName"></div>
+    <div class="lb-msg" id="lbMsg"></div>
+  </div>
+  <div class="lb-nav">
+    <button onclick="lbNav(-1)">‹ Previous</button>
+    <button onclick="lbNav(1)">Next ›</button>
+  </div>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<script>
+const P = new URLSearchParams(window.location.search);
+const folderId = P.get('fid') || '';
+const folderName = P.get('fname') || 'Wedding Guest Book';
+const n1 = P.get('n1') || 'Mike';
+const n2 = P.get('n2') || 'Meghan';
+const dateStr = P.get('date') || '';
+
+document.getElementById('headerTitle').innerHTML = n1 + ' <em>&</em> ' + n2 + ' — Guest Book';
+document.getElementById('headerSub').textContent = [dateStr, folderName].filter(Boolean).join(' · ');
+
+let entries = [];
+let lbIdx = 0;
+
+function parseDescription(desc) {
+  if (!desc) return { name: '', message: '' };
+  const nameMatch = desc.match(/From:\s*(.+?)(?:\s*\|\s*Message:|$)/);
+  const msgMatch = desc.match(/Message:\s*(.+?)$/s);
+  return {
+    name: nameMatch ? nameMatch[1].trim() : '',
+    message: msgMatch ? msgMatch[1].trim() : ''
+  };
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return iso; }
+}
+
+async function loadEntries() {
+  if (!folderId) {
+    showError('No guest book folder configured.', 'Go back to the admin page, create a guest book folder, then open the viewer link from there.');
+    return;
+  }
+
+  document.getElementById('content').innerHTML = '<div class="state-box"><div class="spinner"></div><div class="state-title">Loading entries…</div></div>';
+
+  try {
+    const res = await fetch('/api/drive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list_photos', folder_id: folderId })
+    });
+    const data = await res.json();
+
+    if (data.error) { showError('Could not load entries', data.error); return; }
+
+    entries = (data.photos || []).filter(p => p.name && p.name.startsWith('guestbook_'));
+    const count = entries.length;
+
+    document.getElementById('entryCount').textContent = count + ' entr' + (count === 1 ? 'y' : 'ies');
+    document.getElementById('toolbarInfo').textContent = count + ' guest book entr' + (count === 1 ? 'y' : 'ies') + ' — private';
+
+    if (!count) {
+      document.getElementById('content').innerHTML = `
+        <div class="state-box">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <div class="state-title">No entries yet</div>
+          <p class="state-sub">Guest book entries will appear here once guests scan the QR code and leave a message.</p>
+        </div>`;
+      return;
+    }
+
+    renderEntries(entries);
+
+  } catch(e) {
+    showError('Connection error', e.message);
+  }
+}
+
+function renderEntries(list) {
+  const grid = document.createElement('div');
+  grid.className = 'entries-grid';
+
+  list.forEach((entry, i) => {
+    const { name, message } = parseDescription(entry.description);
+    const thumb = entry.thumbnailLink ? entry.thumbnailLink.replace(/=s\d+$/, '=s600') : '';
+    const dateFormatted = formatDate(entry.createdTime);
+
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.innerHTML = `
+      <div class="entry-num">${i + 1}</div>
+      <div class="entry-photo" onclick="openLb(${i})">
+        ${thumb
+          ? `<img src="${thumb}" alt="${name}" loading="lazy">`
+          : `<div class="entry-photo-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>`
+        }
+      </div>
+      <div class="entry-body">
+        <div class="entry-name">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          ${name || 'Anonymous guest'}
+        </div>
+        ${message
+          ? `<div class="entry-message">${escapeHtml(message)}</div>`
+          : `<div class="no-message">No message left</div>`
+        }
+        <div class="entry-meta">${dateFormatted}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('content').innerHTML = '';
+  document.getElementById('content').appendChild(grid);
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showError(title, sub) {
+  document.getElementById('content').innerHTML = `
+    <div class="state-box">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.25"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="state-title">${title}</div>
+      <p class="state-sub">${sub}</p>
+    </div>`;
+  document.getElementById('entryCount').textContent = 'Error';
+}
+
+function openLb(idx) {
+  lbIdx = idx;
+  showLb();
+  document.getElementById('lb').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function showLb() {
+  const e = entries[lbIdx];
+  if (!e) return;
+  const { name, message } = parseDescription(e.description);
+  const src = e.thumbnailLink ? e.thumbnailLink.replace(/=s\d+$/, '=s1600') : '';
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lbName').textContent = name || 'Anonymous guest';
+  document.getElementById('lbMsg').textContent = message || '';
+  document.getElementById('lbCounter').textContent = (lbIdx + 1) + ' of ' + entries.length;
+}
+function lbNav(dir) {
+  lbIdx = (lbIdx + dir + entries.length) % entries.length;
+  showLb();
+}
+function closeLb() {
+  document.getElementById('lb').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('lb').addEventListener('click', e => { if(e.target===document.getElementById('lb'))closeLb(); });
+document.addEventListener('keydown', e => {
+  if(!document.getElementById('lb').classList.contains('open'))return;
+  if(e.key==='ArrowLeft')lbNav(-1);
+  if(e.key==='ArrowRight')lbNav(1);
+  if(e.key==='Escape')closeLb();
+});
+
+loadEntries();
+</script>
+</body>
+</html>

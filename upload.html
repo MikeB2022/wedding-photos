@@ -78,7 +78,7 @@ footer{text-align:center;padding:1.25rem;font-size:.7rem;letter-spacing:.08em;co
   <div class="header-tag">Wedding Day</div>
   <h1 class="header-names" id="names">Alexandra <em>&</em> James</h1>
   <div class="header-sub" id="headerSub">June 14, 2025 · Rosewood Gardens</div>
-  <div class="table-badge" id="tableBadge">Table 1</div>
+
 </header>
 
 <main>
@@ -135,7 +135,6 @@ const dateStr = P.get('date') || '';
 const venue = P.get('venue') || '';
 
 document.getElementById('names').innerHTML = n1 + ' <em>&</em> ' + n2;
-document.getElementById('tableBadge').textContent = 'Table ' + table;
 document.getElementById('headerSub').textContent = [dateStr, venue].filter(Boolean).join(' · ');
 document.getElementById('footerTxt').textContent = 'Made with love · ' + n1 + ' & ' + n2;
 

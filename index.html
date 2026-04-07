@@ -427,9 +427,21 @@ footer strong{color:var(--gold)}
       <div>
         <p style="font-size:.83rem;color:var(--slate3);line-height:1.7;margin-bottom:1.25rem">Guests scan this to add a photo of themselves and write a personal message to the couple.</p>
         <div class="form-group"><label>Guest book folder name</label>
-          <input id="guestBookFolder" value="Wedding Guest Book" placeholder="Wedding Guest Book">
+          <input id="guestBookFolder" value="Wedding Guest Book" placeholder="Wedding Guest Book" oninput="saveState_gbFolder()">
         </div>
-        <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:1rem">
+        <div id="gbFolderStatus" style="font-size:.78rem;margin-bottom:.75rem;display:none" class="alert alert-success">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+          <span id="gbFolderStatusText">Guest book folder ready</span>
+        </div>
+        <button class="btn btn-outline" onclick="createGuestBookFolder()" style="margin-bottom:.75rem;width:100%">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          Create guest book folder in Drive
+        </button>
+        <a class="btn btn-outline" id="viewGuestBookBtn" href="#" target="_blank" style="margin-bottom:.75rem;width:100%;display:none;justify-content:center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          View guest book entries
+        </a>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:.25rem">
           <button class="btn btn-dark" onclick="printCard('guestbook')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
             Print card
@@ -518,11 +530,11 @@ let S = {
   msg:'Scan to share your photos with us!', qrColor:'#2a2d35',
   siteUrl:'', clientId:'', clientSecret:'',
   accessToken:'', refreshToken:'', tokenExpiry:0,
-  folderId:'', folderName:'', googleConnected:false
+  folderId:'', folderName:'', gbFolderId:'', gbFolderName:'Wedding Guest Book', googleConnected:false
 };
 
 // Tokens/secrets stay local only — everything else syncs to server
-const LOCAL_ONLY = ['accessToken','refreshToken','tokenExpiry','clientSecret','googleConnected','folderId','folderName'];
+const LOCAL_ONLY = ['accessToken','refreshToken','tokenExpiry','clientSecret','googleConnected','folderId','folderName','gbFolderId','gbFolderName'];
 
 function lsLoad(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);LOCAL_ONLY.forEach(k=>{if(p[k]!==undefined&&p[k]!==null)S[k]=p[k];});}}catch{}}
 function lsSave(){try{const local={};LOCAL_ONLY.forEach(k=>{local[k]=S[k];});localStorage.setItem(SK,JSON.stringify(local));}catch{}}
@@ -630,8 +642,47 @@ function buildGuestBookUrl(){
   const base=S.siteUrl||window.location.origin;
   const gbFolder=qs('guestBookFolder')?qs('guestBookFolder').value||'Wedding Guest Book':'Wedding Guest Book';
   const p=new URLSearchParams({n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue,fname:gbFolder});
-  if(S.folderId)p.set('fid',S.folderId);
+  // Use dedicated guest book folder ID if set, otherwise it will be created by name
+  if(S.gbFolderId)p.set('fid',S.gbFolderId);
   return base+'/guestbook.html?'+p.toString();
+}
+function buildGuestBookViewerUrl(){
+  const base=S.siteUrl||window.location.origin;
+  const p=new URLSearchParams({n1:S.name1,n2:S.name2,date:fmtDate(S.date)});
+  if(S.gbFolderId)p.set('fid',S.gbFolderId);
+  if(S.gbFolderName)p.set('fname',S.gbFolderName);
+  return base+'/guestbook-viewer.html?'+p.toString();
+}
+function saveState_gbFolder(){
+  if(qs('guestBookFolder'))S.gbFolderName=qs('guestBookFolder').value;
+  ss();
+}
+async function createGuestBookFolder(){
+  const name=qs('guestBookFolder').value.trim()||'Wedding Guest Book';
+  const token=await ensureToken();if(!token){toast('Connect Google Drive first',true);return;}
+  toast('Creating guest book folder…');
+  const r=await api('/api/drive',{access_token:token,action:'create_folder',folder_title:name});
+  if(r.error){toast('Error: '+r.error,true);return;}
+  const f=r.folder;if(!f||!f.id){toast('Could not create folder',true);return;}
+  S.gbFolderId=f.id;S.gbFolderName=f.name||name;
+  ss();updateQR();
+  // Show status
+  const status=qs('gbFolderStatus');
+  const statusTxt=qs('gbFolderStatusText');
+  if(status){status.style.display='flex';statusTxt.textContent='Folder "'+name+'" created in Drive — private';}
+  // Show viewer button
+  const viewBtn=qs('viewGuestBookBtn');
+  if(viewBtn){viewBtn.href=buildGuestBookViewerUrl();viewBtn.style.display='flex';}
+  toast('Guest book folder created!');
+}
+function updateGuestBookUI(){
+  const status=qs('gbFolderStatus');
+  const statusTxt=qs('gbFolderStatusText');
+  const viewBtn=qs('viewGuestBookBtn');
+  if(S.gbFolderId){
+    if(status){status.style.display='flex';if(statusTxt)statusTxt.textContent='Folder: "'+S.gbFolderName+'" (private)';}
+    if(viewBtn){viewBtn.href=buildGuestBookViewerUrl();viewBtn.style.display='flex';}
+  }
 }
 function updateQR(){
   const size=parseInt(qs('qrSize').value)||220;
@@ -894,7 +945,7 @@ function populateForm(){
   qs('siteUrl').value=S.siteUrl;qs('clientId').value=S.clientId;
   qs('clientSecret').value=S.clientSecret;
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  updateHero();updateQR();updateGalleryLink();
+  updateHero();updateQR();updateGalleryLink();updateGuestBookUI();
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
