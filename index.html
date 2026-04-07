@@ -522,10 +522,10 @@ let S = {
 };
 
 // Tokens/secrets stay local only — everything else syncs to server
-const LOCAL_ONLY = ['accessToken','refreshToken','tokenExpiry','clientSecret'];
+const LOCAL_ONLY = ['accessToken','refreshToken','tokenExpiry','clientSecret','googleConnected','folderId','folderName'];
 
-function lsLoad(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);LOCAL_ONLY.forEach(k=>{if(p[k])S[k]=p[k];});}}catch{}}
-function lsSave(){try{const local={};LOCAL_ONLY.forEach(k=>{if(S[k])local[k]=S[k];});localStorage.setItem(SK,JSON.stringify(local));}catch{}}
+function lsLoad(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);LOCAL_ONLY.forEach(k=>{if(p[k]!==undefined&&p[k]!==null)S[k]=p[k];});}}catch{}}
+function lsSave(){try{const local={};LOCAL_ONLY.forEach(k=>{local[k]=S[k];});localStorage.setItem(SK,JSON.stringify(local));}catch{}}
 
 async function serverLoad(){
   try{
@@ -868,20 +868,30 @@ function populateForm(){
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
-  // 1. Load local-only tokens first
+  // 1. Check for OAuth callback code FIRST (Google redirect lands here)
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasOAuthCode = !!urlParams.get('code');
+  
+  // 2. Load tokens and connection state from localStorage
   lsLoad();
-  // 2. Load the rest from server (works on any device)
+  
+  // 3. Load settings from server (any device) 
   const loaded = await serverLoad();
-  // 3. Merge local tokens back in case serverLoad overwrote them
+  
+  // 4. Re-apply localStorage on top (server doesn't store tokens/connection)
   lsLoad();
+  
+  // 5. Populate form fields with loaded settings
   populateForm();
-  // Handle OAuth callback FIRST before anything else
-  // (the code param is in the URL right after Google redirects back)
-  await handleCallback();
-  // Now update UI with whatever state we have
+  
+  // 6. Process OAuth callback if we just came back from Google
+  if(hasOAuthCode) await handleCallback();
+  
+  // 7. Update Drive UI (may show Connected if tokens loaded from localStorage)
   updateDriveUI();
-  if(S.googleConnected&&S.folderId)loadGallery();
-  if(!loaded&&!S.name1) toast('Tip: fill in your details above and click Save to sync them across devices');
+  
+  // 8. Auto-load gallery if already connected and folder selected
+  if(S.googleConnected && S.folderId) loadGallery();
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
