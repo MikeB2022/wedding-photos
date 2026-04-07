@@ -128,7 +128,7 @@ body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--sand);col
 .qr-names{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--slate);margin-bottom:.25rem}
 .qr-names em{font-style:italic;color:var(--gold)}
 .qr-date{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--slate3);margin-bottom:1.25rem}
-#qrcode{display:flex;justify-content:center;margin:1.25rem 0}
+#qrcode,#qrcode-gb{display:flex;justify-content:center;margin:1.25rem 0;min-height:0}
 #qrcode canvas,#qrcode img{border:6px solid var(--white)!important;box-shadow:0 0 0 1px var(--sand3);border-radius:4px}
 .qr-msg{font-size:.75rem;color:var(--slate3);font-style:italic;margin-top:.6rem;line-height:1.6}
 .qr-table-tag{display:inline-block;background:var(--sand);color:var(--gold);font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .85rem;margin-top:.75rem;border:1px solid var(--sand3);border-radius:3px}
@@ -696,15 +696,21 @@ async function downloadQR(type){
 // ─── OAUTH ──────────────────────────────────────────
 function updateDriveUI(){
   const ok=S.googleConnected&&!!S.accessToken;
-  qs('driveStatus').className='pill '+(ok?'pill-connected':'pill-disconnected');
-  qs('driveStatusText').textContent=ok?'Connected':'Not connected';
-  qs('driveSetup').style.display=ok?'none':'block';
-  qs('driveConnected').style.display=ok?'block':'none';
-  qs('statDrive').textContent=ok?'Connected':'Not connected';
+  const statusEl=qs('driveStatus');
+  const statusTxt=qs('driveStatusText');
+  if(statusEl)statusEl.className='pill '+(ok?'pill-connected':'pill-disconnected');
+  if(statusTxt)statusTxt.textContent=ok?'Connected':'Not connected';
+  if(qs('driveSetup'))qs('driveSetup').style.display=ok?'none':'block';
+  if(qs('driveConnected'))qs('driveConnected').style.display=ok?'block':'none';
+  if(qs('statDrive'))qs('statDrive').textContent=ok?'Connected':'Not connected';
   if(ok){
     const rt=qs('refreshTokenDisplay');
-    if(rt)rt.textContent=S.refreshToken||'(already saved — reconnect to see again)';
+    if(rt)rt.textContent=S.refreshToken||'(already saved in Netlify env — reconnect to see again)';
+    // Show token box only if refresh token is new
+    const tokenBox=qs('tokenBox');
+    if(tokenBox&&!S.refreshToken)tokenBox.style.display='none';
     loadFolders();
+    if(S.folderId)showSelectedFolder();
   }
 }
 function startOAuth(){
@@ -721,14 +727,24 @@ async function handleCallback(){
   const p=new URLSearchParams(window.location.search);
   const code=p.get('code');if(!code)return;
   window.history.replaceState({},'',window.location.pathname);
+  // Show connecting state immediately
+  const statusEl=qs('driveStatus');
+  const statusTxt=qs('driveStatusText');
+  if(statusEl)statusEl.className='pill pill-loading';
+  if(statusTxt)statusTxt.textContent='Connecting…';
   toast('Connecting to Google Drive…');
   try{
     const r=await api('/api/auth',{code,redirect_uri:window.location.origin+'/'});
-    if(r.error){toast('Auth error: '+r.error,true);return;}
-    S.accessToken=r.access_token;S.refreshToken=r.refresh_token;
-    S.tokenExpiry=Date.now()+(r.expires_in*1000);S.googleConnected=true;
-    ss();updateDriveUI();toast('Google Drive connected!');
-  }catch(e){toast('Connection failed: '+e.message,true);}
+    if(r.error){toast('Auth error: '+r.error,true);if(statusEl)statusEl.className='pill pill-disconnected';if(statusTxt)statusTxt.textContent='Not connected';return;}
+    S.accessToken=r.access_token;
+    S.refreshToken=r.refresh_token||S.refreshToken;
+    S.tokenExpiry=Date.now()+((r.expires_in||3600)*1000);
+    S.googleConnected=true;
+    lsSave();
+    await serverSave();
+    updateDriveUI();
+    toast('Google Drive connected!');
+  }catch(e){toast('Connection failed: '+e.message,true);if(statusEl)statusEl.className='pill pill-disconnected';if(statusTxt)statusTxt.textContent='Not connected';}
 }
 async function ensureToken(){
   if(!S.accessToken)return null;
@@ -859,9 +875,13 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   // 3. Merge local tokens back in case serverLoad overwrote them
   lsLoad();
   populateForm();
-  handleCallback();
+  // Handle OAuth callback FIRST before anything else
+  // (the code param is in the URL right after Google redirects back)
+  await handleCallback();
+  // Now update UI with whatever state we have
+  updateDriveUI();
   if(S.googleConnected&&S.folderId)loadGallery();
-  if(!loaded) toast('Tip: save your details to sync them across devices');
+  if(!loaded&&!S.name1) toast('Tip: fill in your details above and click Save to sync them across devices');
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
