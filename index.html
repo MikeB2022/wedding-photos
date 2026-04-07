@@ -695,7 +695,7 @@ async function downloadQR(type){
 
 // ─── OAUTH ──────────────────────────────────────────
 function updateDriveUI(){
-  const ok=S.googleConnected&&!!S.accessToken;
+  const ok=(S.googleConnected||!!S.refreshToken)&&(!!S.accessToken||!!S.refreshToken);
   const statusEl=qs('driveStatus');
   const statusTxt=qs('driveStatusText');
   if(statusEl)statusEl.className='pill '+(ok?'pill-connected':'pill-disconnected');
@@ -747,14 +747,23 @@ async function handleCallback(){
   }catch(e){toast('Connection failed: '+e.message,true);if(statusEl)statusEl.className='pill pill-disconnected';if(statusTxt)statusTxt.textContent='Not connected';}
 }
 async function ensureToken(){
-  if(!S.accessToken)return null;
-  if(Date.now()<S.tokenExpiry-60000)return S.accessToken;
-  if(!S.refreshToken)return null;
-  try{
-    const r=await api('/api/auth',{refresh_token:S.refreshToken,grant_type:'refresh_token'});
-    if(r.access_token){S.accessToken=r.access_token;S.tokenExpiry=Date.now()+(r.expires_in||3600)*1000;ss();}
-    return S.accessToken;
-  }catch{return S.accessToken;}
+  // If we have a valid token, use it
+  if(S.accessToken && Date.now()<S.tokenExpiry-60000) return S.accessToken;
+  // If we have a refresh token, use it to get a new access token
+  if(S.refreshToken){
+    try{
+      const r=await api('/api/auth',{refresh_token:S.refreshToken,grant_type:'refresh_token'});
+      if(r.access_token){
+        S.accessToken=r.access_token;
+        S.tokenExpiry=Date.now()+(r.expires_in||3600)*1000;
+        S.googleConnected=true;
+        lsSave();
+        return S.accessToken;
+      }
+      if(r.error){console.warn('Token refresh error:',r.error);}
+    }catch(e){console.warn('Token refresh failed:',e.message);}
+  }
+  return S.accessToken||null;
 }
 function disconnectDrive(){
   Object.assign(S,{accessToken:'',refreshToken:'',tokenExpiry:0,googleConnected:false,folderId:'',folderName:''});
@@ -765,7 +774,12 @@ function disconnectDrive(){
 
 // ─── FOLDERS ────────────────────────────────────────
 async function loadFolders(){
-  const token=await ensureToken();if(!token)return;
+  const token=await ensureToken();
+  if(!token){
+    const grid=qs('folderGrid');
+    if(grid)grid.innerHTML='<div style="font-size:.82rem;color:var(--red)">Not connected — please authorize Google Drive first.</div>';
+    return;
+  }
   const grid=qs('folderGrid');
   grid.innerHTML='<div style="font-size:.82rem;color:var(--slate3)">Loading…</div>';
   const r=await api('/api/drive',{access_token:token,action:'list_folders'});
@@ -815,8 +829,9 @@ function showSelectedFolder(){
 
 // ─── GALLERY ────────────────────────────────────────
 async function loadGallery(){
-  if(!S.googleConnected||!S.folderId){toast('Connect Google Drive and select a folder first',true);return;}
-  const token=await ensureToken();if(!token)return;
+  if(!S.folderId){toast('Select a Drive folder first',true);return;}
+  const token=await ensureToken();
+  if(!token){toast('Not connected to Google Drive — please authorize first',true);return;}
   const container=qs('galleryContainer');
   container.innerHTML='<div class="gallery-empty"><div class="spin" style="color:var(--slate3);width:20px;height:20px;border-color:rgba(0,0,0,.1);border-top-color:var(--gold)"></div><p style="font-size:.85rem;margin-top:.5rem">Loading photos…</p></div>';
   try{
@@ -891,7 +906,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   updateDriveUI();
   
   // 8. Auto-load gallery if already connected and folder selected
-  if(S.googleConnected && S.folderId) loadGallery();
+  if(S.folderId && (S.googleConnected || S.refreshToken)) loadGallery();
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
