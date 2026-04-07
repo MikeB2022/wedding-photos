@@ -894,7 +894,7 @@ function populateForm(){
   qs('siteUrl').value=S.siteUrl;qs('clientId').value=S.clientId;
   qs('clientSecret').value=S.clientSecret;
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  updateHero();renderTables();updateQR();updateGalleryLink();updateDriveUI();
+  updateHero();updateQR();updateGalleryLink();
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
@@ -904,15 +904,12 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   
   // 2. Load tokens and connection state from localStorage
   lsLoad();
-  console.log('[init] After lsLoad - refreshToken:', !!S.refreshToken, 'accessToken:', !!S.accessToken, 'googleConnected:', S.googleConnected, 'folderId:', S.folderId);
   
   // 3. Load settings from server (any device) 
   const loaded = await serverLoad();
-  console.log('[init] After serverLoad - folderId:', S.folderId, 'name1:', S.name1);
   
   // 4. Re-apply localStorage on top (server doesn't store tokens/connection)
   lsLoad();
-  console.log('[init] After 2nd lsLoad - refreshToken:', !!S.refreshToken, 'googleConnected:', S.googleConnected);
   
   // 5. Populate form fields with loaded settings
   populateForm();
