@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Guest Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sand:#f7f0e6;--sand2:#ede4d6;--sand3:#d9ccba;
+  --slate:#2a2d35;--slate2:#3e4250;--slate3:#6b6f7c;
+  --gold:#c9974a;--gold2:#e8b96a;--gold3:#f5ddb0;
+  --white:#ffffff;
+  --green:#2d5a3d;--green-bg:#e8f0eb;
+  --red:#8b2020;--red-bg:#f5e8e8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--sand);color:var(--slate);min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+header{background:var(--slate);padding:2rem 1.5rem;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;border:1px solid rgba(201,151,74,.1)}
+header::after{content:'';position:absolute;bottom:-80px;left:-40px;width:240px;height:240px;border-radius:50%;border:1px solid rgba(201,151,74,.08)}
+.header-tag{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold2);margin-bottom:.6rem}
+.header-icon{width:52px;height:52px;border-radius:50%;background:rgba(201,151,74,.12);border:1px solid rgba(201,151,74,.25);display:flex;align-items:center;justify-content:center;margin:0 auto .85rem}
+.header-icon svg{width:24px;height:24px;color:var(--gold2)}
+.header-names{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:400;color:var(--white);line-height:1.15}
+.header-names em{font-style:italic;color:var(--gold2)}
+.header-sub{font-size:.72rem;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-top:.35rem}
+.header-invite{font-size:.85rem;color:rgba(255,255,255,.6);margin-top:1rem;line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto}
+
+main{flex:1;padding:1.75rem 1.25rem;max-width:520px;margin:0 auto;width:100%}
+
+/* PHOTO UPLOAD */
+.photo-section{margin-bottom:1.5rem}
+.photo-label{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--slate3);margin-bottom:.6rem;display:block}
+
+.photo-drop{position:relative;cursor:pointer;transition:all .22s}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2}
+.photo-preview-wrap{width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1.5px dashed var(--sand3);background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;transition:all .22s;position:relative}
+.photo-drop:hover .photo-preview-wrap,.photo-drop.drag .photo-preview-wrap{border-color:var(--gold);background:var(--gold3)}
+.photo-preview-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;display:none}
+.photo-preview-wrap.has-photo img{display:block}
+.photo-preview-wrap.has-photo .photo-placeholder-content{display:none}
+.photo-placeholder-content{display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center;padding:1.5rem}
+.photo-drop-icon{width:56px;height:56px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center}
+.photo-drop-icon svg{width:24px;height:24px;color:var(--gold)}
+.photo-drop-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;color:var(--slate)}
+.photo-drop-sub{font-size:.75rem;color:var(--slate3);line-height:1.5}
+.photo-change-btn{position:absolute;bottom:.75rem;right:.75rem;background:rgba(42,45,53,.7);color:var(--white);border:none;border-radius:6px;padding:.4rem .75rem;font-size:.7rem;cursor:pointer;z-index:3;display:none;font-family:'DM Sans',sans-serif}
+.photo-preview-wrap.has-photo .photo-change-btn{display:block}
+
+/* MESSAGE */
+.message-section{margin-bottom:1.5rem}
+.char-count{font-size:.68rem;color:var(--slate3);text-align:right;margin-top:.3rem}
+
+/* FORM FIELDS */
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--slate3);margin-bottom:.4rem}
+.field input,.field textarea{width:100%;padding:.85rem 1rem;border:1px solid var(--sand3);background:var(--white);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--slate);outline:none;transition:border-color .18s;-webkit-appearance:none;resize:none}
+.field input:focus,.field textarea:focus{border-color:var(--gold);background:var(--white)}
+.field textarea{min-height:130px;line-height:1.6}
+
+/* SUBMIT */
+.submit-btn{width:100%;background:var(--slate);color:var(--white);border:none;padding:1.1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:.65rem;margin-top:.5rem}
+.submit-btn:hover:not(:disabled){background:var(--gold)}
+.submit-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ERR */
+.err{padding:.75rem 1rem;border-radius:8px;font-size:.8rem;display:none;gap:.5rem;align-items:flex-start;margin-bottom:1rem;background:var(--red-bg);color:var(--red);border:1px solid #e0b0b0}
+.err svg{flex-shrink:0;margin-top:1px}
+
+/* SUCCESS */
+.success{display:none;text-align:center;padding:3rem 1.5rem}
+.success-ring{width:72px;height:72px;border-radius:50%;background:var(--gold3);border:1px solid var(--gold2);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+.success-ring svg{width:30px;height:30px;color:var(--gold)}
+.success-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:400;color:var(--slate);margin-bottom:.6rem}
+.success-title em{font-style:italic;color:var(--gold)}
+.success-msg{font-size:.88rem;line-height:1.8;color:var(--slate3);margin-bottom:1.75rem}
+.another-btn{background:transparent;color:var(--slate);border:1px solid var(--sand3);padding:.75rem 1.75rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.another-btn:hover{background:var(--slate);color:var(--white);border-color:var(--slate)}
+
+/* PROGRESS */
+.progress-wrap{width:100%;height:3px;background:var(--sand2);border-radius:2px;margin:.75rem 0;overflow:hidden;display:none}
+.progress-bar{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .3s}
+
+footer{text-align:center;padding:1.25rem;font-size:.7rem;letter-spacing:.08em;color:var(--slate3);border-top:1px solid var(--sand2)}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--white);border-radius:50%;animation:spin .65s linear infinite}
+
+/* Decorative divider */
+.divider{display:flex;align-items:center;gap:1rem;margin:1.5rem 0;color:var(--sand3)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--sand3)}
+.divider span{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--slate3);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">Guest Book</div>
+  <div class="header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </div>
+  <h1 class="header-names" id="names">Alexandra <em>&</em> James</h1>
+  <div class="header-sub" id="headerSub">June 14, 2025 · Rosewood Gardens</div>
+  <p class="header-invite">Leave us a message and a photo — we'd love to remember your face and your words on our special day.</p>
+</header>
+
+<main>
+  <div id="formWrap">
+    <div class="err" id="errBanner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errText"></span>
+    </div>
+
+    <!-- PHOTO -->
+    <div class="photo-section">
+      <span class="photo-label">Your photo</span>
+      <div class="photo-drop" id="photoDrop">
+        <input type="file" id="photoInput" accept="image/*" capture="user">
+        <div class="photo-preview-wrap" id="photoPreview">
+          <div class="photo-placeholder-content">
+            <div class="photo-drop-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="photo-drop-title">Add your photo</div>
+            <p class="photo-drop-sub">Tap to take a selfie or choose from your camera roll</p>
+          </div>
+          <img id="photoImg" src="" alt="">
+          <button class="photo-change-btn" onclick="changePhoto(event)">Change photo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"><span>your message</span></div>
+
+    <!-- FIELDS -->
+    <div class="field">
+      <label>Your name(s)</label>
+      <input type="text" id="guestName" placeholder="e.g. Sarah & Tom" autocomplete="name">
+    </div>
+
+    <div class="field message-section">
+      <label>Message to the couple</label>
+      <textarea id="message" placeholder="Write your heartfelt message here…" maxlength="500" oninput="updateCount()"></textarea>
+      <div class="char-count"><span id="charCount">0</span> / 500</div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitEntry()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Sign our guest book
+    </button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success" id="successPanel">
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <h2 class="success-title">Thank you <em>so much!</em></h2>
+    <p class="success-msg" id="successMsg">Your message and photo have been saved in our guest book. We're so glad you're here to celebrate with us!</p>
+    <button class="another-btn" onclick="reset()">Add another message</button>
+  </div>
+</main>
+
+<footer><p id="footerTxt">Made with love · Alexandra & James</p></footer>
+
+<script>
+const P = new URLSearchParams(window.location.search);
+const folderId = P.get('fid') || '';
+const folderName = P.get('fname') || 'Wedding Guest Book';
+const n1 = P.get('n1') || 'Alexandra';
+const n2 = P.get('n2') || 'James';
+const dateStr = P.get('date') || '';
+const venue = P.get('venue') || '';
+
+document.getElementById('names').innerHTML = n1 + ' <em>&</em> ' + n2;
+document.getElementById('headerSub').textContent = [dateStr, venue].filter(Boolean).join(' · ');
+document.getElementById('footerTxt').textContent = 'Made with love · ' + n1 + ' & ' + n2;
+
+let photoFile = null;
+let photoB64 = null;
+
+const photoDrop = document.getElementById('photoDrop');
+const photoInput = document.getElementById('photoInput');
+const photoPreview = document.getElementById('photoPreview');
+const photoImg = document.getElementById('photoImg');
+
+// Drag and drop
+photoDrop.addEventListener('dragover', e => { e.preventDefault(); photoDrop.classList.add('drag'); });
+photoDrop.addEventListener('dragleave', () => photoDrop.classList.remove('drag'));
+photoDrop.addEventListener('drop', e => {
+  e.preventDefault(); photoDrop.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) setPhoto(f);
+});
+
+photoInput.addEventListener('change', e => {
+  if (e.target.files[0]) setPhoto(e.target.files[0]);
+});
+
+function setPhoto(file) {
+  photoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoB64 = e.target.result.split(',')[1];
+    photoImg.src = e.target.result;
+    photoPreview.classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+}
+
+function changePhoto(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  photoInput.click();
+}
+
+function updateCount() {
+  document.getElementById('charCount').textContent = document.getElementById('message').value.length;
+}
+
+function showErr(msg) {
+  const b = document.getElementById('errBanner');
+  b.style.display = 'flex';
+  document.getElementById('errText').textContent = msg;
+  b.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function hideErr() { document.getElementById('errBanner').style.display = 'none'; }
+
+function setProgress(pct) {
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+async function submitEntry() {
+  hideErr();
+  const name = document.getElementById('guestName').value.trim();
+  const message = document.getElementById('message').value.trim();
+
+  if (!name) { showErr('Please enter your name so the couple knows who left this message!'); return; }
+  if (!message) { showErr('Please write a message — even a few words mean so much!'); return; }
+  if (!photoB64) { showErr('Please add a photo of yourself so the couple can remember your face!'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+  setProgress(20);
+
+  try {
+    // Build a composite filename with guest name and timestamp
+    const safeName = name.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
+    const filename = `guestbook_${safeName}_${Date.now()}.jpg`;
+
+    // Create a description that includes the message
+    const description = `From: ${name} | Message: ${message}`;
+
+    setProgress(50);
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        folder_id: folderId || undefined,
+        folder_name: folderName,
+        filename,
+        mimetype: photoFile ? photoFile.type : 'image/jpeg',
+        data: photoB64,
+        guest_name: name,
+        message,
+        table: 'guest-book',
+        description
+      })
+    });
+
+    setProgress(90);
+    const result = await res.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Upload failed');
+    }
+
+    setProgress(100);
+    setTimeout(() => {
+      document.getElementById('formWrap').style.display = 'none';
+      document.getElementById('successPanel').style.display = 'block';
+      document.getElementById('successMsg').textContent =
+        `Thank you, ${name}! Your message and photo have been saved in our guest book. We're so glad you're here to celebrate with us!`;
+    }, 400);
+
+  } catch (err) {
+    showErr('Something went wrong — please try again. (' + err.message + ')');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Sign our guest book';
+    document.getElementById('progressWrap').style.display = 'none';
+  }
+}
+
+function reset() {
+  photoFile = null; photoB64 = null;
+  photoImg.src = ''; photoPreview.classList.remove('has-photo');
+  photoInput.value = '';
+  document.getElementById('guestName').value = '';
+  document.getElementById('message').value = '';
+  document.getElementById('charCount').textContent = '0';
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('successPanel').style.display = 'none';
+  document.getElementById('formWrap').style.display = 'block';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Sign our guest book';
+  hideErr();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

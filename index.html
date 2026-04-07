@@ -207,10 +207,10 @@ footer strong{color:var(--gold)}
 <div class="hero" id="heroSection">
   <div class="hero-eyebrow">Wedding Photo Hub</div>
   <h1 class="hero-title" id="heroTitle">Alexandra <em>&</em> James</h1>
-  <p class="hero-sub" id="heroSub">June 14, 2025 · Rosewood Gardens — Guests scan QR codes at their table and share photos directly to your Google Drive.</p>
+  <p class="hero-sub" id="heroSub">June 14, 2025 · Rosewood Gardens — Guests scan QR codes to share photos and sign the guest book — all saved to your Google Drive.</p>
   <div class="hero-stats">
     <div><div class="stat-num" id="statPhotos">0</div><div class="stat-label">Photos shared</div></div>
-    <div><div class="stat-num" id="statTables">—</div><div class="stat-label">Tables set up</div></div>
+    <div><div class="stat-num" id="statGuestBook">0</div><div class="stat-label">Guest book entries</div></div>
     <div><div class="stat-num" id="statDrive" style="font-size:1rem;padding-top:.6rem">Not connected</div><div class="stat-label">Google Drive</div></div>
   </div>
 </div>
@@ -366,21 +366,18 @@ footer strong{color:var(--gold)}
   <div class="section-head">
     <div class="section-eyebrow">Step 3</div>
     <h2 class="section-title">QR <em>cards</em></h2>
-    <p class="section-body">Generate a card for each table. Guests scan it on their phone and can upload photos instantly.</p>
+    <p class="section-body">Two QR codes — one for guests to share photos, one for the guest book. Print them and place them around your venue.</p>
   </div>
-  <div class="grid2">
-    <div>
-      <div class="card">
-        <div class="card-title">Card <em>settings</em></div>
-        <div class="form-group"><label>Table number</label>
-          <select id="tableSelect" onchange="updateQR()">
-            <option value="1">Table 1</option><option value="2">Table 2</option><option value="3">Table 3</option>
-            <option value="4">Table 4</option><option value="5">Table 5</option><option value="6">Table 6</option>
-            <option value="7">Table 7</option><option value="8">Table 8</option><option value="9">Table 9</option>
-            <option value="10">Table 10</option><option value="11">Table 11</option><option value="12">Table 12</option>
-            <option value="13">Table 13</option><option value="14">Table 14</option><option value="15">Table 15</option>
-          </select>
-        </div>
+
+  <!-- PHOTO UPLOAD QR -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title" style="margin-bottom:1.5rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" style="vertical-align:middle;margin-right:.4rem"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+      Photo sharing <em>card</em>
+    </div>
+    <div class="grid2" style="gap:2rem;align-items:start">
+      <div>
+        <p style="font-size:.83rem;color:var(--slate3);line-height:1.7;margin-bottom:1.25rem">Guests scan this to upload photos to your Drive folder.</p>
         <div class="form-group"><label>QR size</label>
           <select id="qrSize" onchange="updateQR()">
             <option value="180">Small</option>
@@ -388,43 +385,63 @@ footer strong{color:var(--gold)}
             <option value="280">Large</option>
           </select>
         </div>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:1rem">
+          <button class="btn btn-dark" onclick="printCard('photo')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print card
+          </button>
+          <button class="btn btn-outline" onclick="downloadQR('photo')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PNG
+          </button>
+        </div>
       </div>
-      <div class="qr-actions" style="display:flex;flex-direction:column;gap:.6rem">
-        <button class="btn btn-dark" onclick="window.print()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print this card
-        </button>
-        <button class="btn btn-outline" onclick="downloadQR()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download QR PNG
-        </button>
+      <div class="qr-preview" id="photoQrPreview">
+        <div class="qr-names" id="previewNames">Alexandra <em>&</em> James</div>
+        <div class="qr-date" id="previewDate">June 14, 2025 · Rosewood Gardens</div>
+        <div id="qrcode"></div>
+        <div class="qr-msg" id="previewMsg">"Scan to share your photos with us!"</div>
+        <div class="qr-table-tag" style="background:var(--sand);color:var(--slate3)">Share Photos</div>
       </div>
     </div>
-    <div class="qr-preview" id="qrCardPreview">
-      <div class="qr-names" id="previewNames">Alexandra <em>&</em> James</div>
-      <div class="qr-date" id="previewDate">June 14, 2025 · Rosewood Gardens</div>
-      <div id="qrcode"></div>
-      <div class="qr-msg" id="previewMsg">"Scan to share your photos with us!"</div>
-      <div class="qr-table-tag" id="previewTable">Table 1</div>
+  </div>
+
+  <!-- GUEST BOOK QR -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1.5rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" style="vertical-align:middle;margin-right:.4rem"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Guest book <em>card</em>
+    </div>
+    <div class="grid2" style="gap:2rem;align-items:start">
+      <div>
+        <p style="font-size:.83rem;color:var(--slate3);line-height:1.7;margin-bottom:1.25rem">Guests scan this to add a photo of themselves and write a personal message to the couple.</p>
+        <div class="form-group"><label>Guest book folder name</label>
+          <input id="guestBookFolder" value="Wedding Guest Book" placeholder="Wedding Guest Book">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:1rem">
+          <button class="btn btn-dark" onclick="printCard('guestbook')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2v-5a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print card
+          </button>
+          <button class="btn btn-outline" onclick="downloadQR('guestbook')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PNG
+          </button>
+        </div>
+      </div>
+      <div class="qr-preview" id="gbQrPreview">
+        <div class="qr-names">Alexandra <em>&</em> James</div>
+        <div class="qr-date" id="gbPreviewDate">June 14, 2025 · Rosewood Gardens</div>
+        <div id="qrcode-gb"></div>
+        <div class="qr-msg">"Leave us a photo & a message!"</div>
+        <div class="qr-table-tag" style="background:var(--gold3);color:var(--gold);border-color:var(--gold2)">Guest Book</div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- TABLE MANAGEMENT -->
-<section id="table-section" style="margin-bottom:2rem">
-  <div class="section-head">
-    <div class="section-eyebrow">Step 4</div>
-    <h2 class="section-title">All <em>tables</em></h2>
-  </div>
-  <div class="card">
-    <div style="display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap">
-      <div class="form-group" style="margin:0"><label>Number of tables</label><input type="number" id="tableCount" value="10" min="1" max="50" style="max-width:100px"></div>
-      <button class="btn btn-dark" onclick="renderTables()">Generate</button>
-      <button class="btn btn-outline" onclick="window.print()">Print all</button>
-    </div>
-    <div class="tables-grid" id="tablesGrid"></div>
-  </div>
-</section>
+
 
 <!-- GALLERY -->
 <section id="gallery-section" style="margin-bottom:2rem">
@@ -565,7 +582,7 @@ function saveCreds(){
 }
 function updateHero(){
   qs('heroTitle').innerHTML=S.name1+' <em>&</em> '+S.name2;
-  qs('heroSub').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'')+' — Guests scan QR codes at their table and share photos directly to your Google Drive.';
+  qs('heroSub').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'')+' — Guests scan QR codes to share photos and sign the guest book — all saved to your Google Drive.';
   qs('footerNames').textContent=S.name1+' & '+S.name2;
   qs('footerDate').textContent=fmtDate(S.date)||new Date().getFullYear();
   qs('statDrive').textContent=S.googleConnected?'Connected':'Not connected';
@@ -591,43 +608,56 @@ function copyGalleryUrl(){
     const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Gallery link copied!');
   });
 }
-function buildUploadUrl(table){
+function buildUploadUrl(){
   const base=S.siteUrl||window.location.origin;
-  const p=new URLSearchParams({table,n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue,msg:S.msg});
+  const p=new URLSearchParams({n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue,msg:S.msg});
   if(S.folderId)p.set('fid',S.folderId);
   if(S.folderName)p.set('fname',S.folderName);
   return base+'/upload.html?'+p.toString();
 }
-function updateQR(){
-  const table=qs('tableSelect').value;
-  const size=parseInt(qs('qrSize').value)||220;
-  qs('previewNames').innerHTML=S.name1+' <em>&</em> '+S.name2;
-  qs('previewDate').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'');
-  qs('previewMsg').textContent='"'+S.msg+'"';
-  qs('previewTable').textContent='Table '+table;
-  const c=qs('qrcode');c.innerHTML='';
-  try{
-    new QRCode(c,{text:buildUploadUrl(table),width:size,height:size,colorDark:S.qrColor,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){c.innerHTML='<p style="font-size:.75rem;color:var(--slate3);padding:2rem">Set your Netlify URL to generate QR codes</p>';}
+function buildGuestBookUrl(){
+  const base=S.siteUrl||window.location.origin;
+  const gbFolder=qs('guestBookFolder')?qs('guestBookFolder').value||'Wedding Guest Book':'Wedding Guest Book';
+  const p=new URLSearchParams({n1:S.name1,n2:S.name2,date:fmtDate(S.date),venue:S.venue,fname:gbFolder});
+  if(S.folderId)p.set('fid',S.folderId);
+  return base+'/guestbook.html?'+p.toString();
 }
-function downloadQR(){
-  const canvas=document.querySelector('#qrcode canvas');
+function updateQR(){
+  const size=parseInt(qs('qrSize').value)||220;
+  // Update preview text
+  if(qs('previewNames'))qs('previewNames').innerHTML=S.name1+' <em>&</em> '+S.name2;
+  if(qs('previewDate'))qs('previewDate').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'');
+  if(qs('previewMsg'))qs('previewMsg').textContent='"'+S.msg+'"';
+  if(qs('gbPreviewDate'))qs('gbPreviewDate').textContent=fmtDate(S.date)+(S.venue?' · '+S.venue:'');
+  // Photo QR
+  const c=qs('qrcode');
+  if(c){
+    c.innerHTML='';
+    try{ new QRCode(c,{text:buildUploadUrl(),width:size,height:size,colorDark:S.qrColor,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); }
+    catch(e){ c.innerHTML='<p style="font-size:.75rem;color:var(--slate3);padding:2rem">Set your Netlify URL to generate QR codes</p>'; }
+  }
+  // Guest book QR
+  const gb=qs('qrcode-gb');
+  if(gb){
+    gb.innerHTML='';
+    try{ new QRCode(gb,{text:buildGuestBookUrl(),width:size,height:size,colorDark:'#c9974a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); }
+    catch(e){ gb.innerHTML='<p style="font-size:.75rem;color:var(--slate3);padding:2rem">Set your Netlify URL to generate QR codes</p>'; }
+  }
+}
+function printCard(type){
+  const el=qs(type==='guestbook'?'gbQrPreview':'photoQrPreview');
+  if(!el)return;
+  const w=window.open('','_blank');
+  w.document.write('<html><head><title>QR Card</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7f0e6;font-family:serif}@media print{body{margin:0}}</style></head><body>'+el.outerHTML+'</body></html>');
+  w.document.close();setTimeout(()=>w.print(),500);
+}
+function downloadQR(type){
+  const id=type==='guestbook'?'qrcode-gb':'qrcode';
+  const canvas=document.querySelector('#'+id+' canvas');
   if(!canvas){toast('Generate QR first',true);return;}
   const a=document.createElement('a');
-  a.download='table-'+qs('tableSelect').value+'-qr.png';
+  a.download=(type==='guestbook'?'guest-book':'photo-sharing')+'-qr.png';
   a.href=canvas.toDataURL('image/png');a.click();toast('Downloaded!');
-}
-function renderTables(){
-  const count=parseInt(qs('tableCount').value)||10;
-  const grid=qs('tablesGrid');grid.innerHTML='';
-  for(let i=1;i<=count;i++){
-    const c=document.createElement('div');c.className='table-tile';
-    c.onclick=()=>c.classList.toggle('sel');
-    c.innerHTML=`<div class="table-num">${i}</div><div class="table-lbl">Table</div><div class="table-check"></div>`;
-    grid.appendChild(c);
-  }
-  qs('statTables').textContent=count;
-  toast(count+' tables ready');
 }
 
 // ─── OAUTH ──────────────────────────────────────────

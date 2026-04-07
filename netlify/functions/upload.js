@@ -46,7 +46,7 @@ exports.handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body || '{}');
-    const { folder_id, folder_name, filename, mimetype, data: b64, guest_name, table } = body;
+    const { folder_id, folder_name, filename, mimetype, data: b64, guest_name, table, message } = body;
 
     if (!b64) return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'No image data received' }) };
 
@@ -59,7 +59,12 @@ exports.handler = async (event) => {
     const imgBuffer = Buffer.from(b64, 'base64');
     const safeName = filename || `photo-${Date.now()}.jpg`;
     const safeMime = mimetype || 'image/jpeg';
-    const desc = [guest_name ? `From: ${guest_name}` : null, table ? `Table ${table}` : null].filter(Boolean).join(' · ');
+    const descParts = [];
+    if (guest_name) descParts.push(`From: ${guest_name}`);
+    if (table && table !== 'guest-book') descParts.push(`Table ${table}`);
+    if (table === 'guest-book') descParts.push('Guest Book');
+    if (message) descParts.push(`Message: ${message}`);
+    const desc = descParts.join(' | ') || 'Wedding guest';
 
     const meta = JSON.stringify({ name: safeName, description: desc || 'Wedding guest', parents: [folderId] });
     const boundary = 'wphoto_bound';
