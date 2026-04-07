@@ -694,8 +694,7 @@ async function downloadQR(type){
 }
 
 // ─── OAUTH ──────────────────────────────────────────
-function updateDriveUI(){
-  const ok=(S.googleConnected||!!S.refreshToken)&&(!!S.accessToken||!!S.refreshToken);
+function setDriveConnectedUI(ok){
   const statusEl=qs('driveStatus');
   const statusTxt=qs('driveStatusText');
   if(statusEl)statusEl.className='pill '+(ok?'pill-connected':'pill-disconnected');
@@ -703,12 +702,28 @@ function updateDriveUI(){
   if(qs('driveSetup'))qs('driveSetup').style.display=ok?'none':'block';
   if(qs('driveConnected'))qs('driveConnected').style.display=ok?'block':'none';
   if(qs('statDrive'))qs('statDrive').textContent=ok?'Connected':'Not connected';
+}
+async function updateDriveUI(){
+  // Show loading state while we check
+  const statusEl=qs('driveStatus');
+  const statusTxt=qs('driveStatusText');
+  if(!S.refreshToken&&!S.accessToken){
+    setDriveConnectedUI(false);
+    return;
+  }
+  // Show connecting indicator while we validate
+  if(statusEl)statusEl.className='pill pill-loading';
+  if(statusTxt)statusTxt.textContent='Checking…';
+  // Try to get a valid token — this refreshes if needed
+  const token=await ensureToken();
+  const ok=!!token;
+  if(ok)S.googleConnected=true;
+  setDriveConnectedUI(ok);
   if(ok){
     const rt=qs('refreshTokenDisplay');
-    if(rt)rt.textContent=S.refreshToken||'(already saved in Netlify env — reconnect to see again)';
-    // Show token box only if refresh token is new
+    if(rt)rt.textContent=S.refreshToken||'(already saved in Netlify env)';
     const tokenBox=qs('tokenBox');
-    if(tokenBox&&!S.refreshToken)tokenBox.style.display='none';
+    if(tokenBox)tokenBox.style.display=S.refreshToken?'flex':'none';
     loadFolders();
     if(S.folderId)showSelectedFolder();
   }
@@ -879,7 +894,7 @@ function populateForm(){
   qs('siteUrl').value=S.siteUrl;qs('clientId').value=S.clientId;
   qs('clientSecret').value=S.clientSecret;
   qs('redirectUriDisplay').textContent=(S.siteUrl||'https://your-site.netlify.app')+'/';
-  updateHero();renderTables();updateQR();updateDriveUI();updateGalleryLink();
+  updateHero();renderTables();updateQR();updateGalleryLink();updateDriveUI();
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
@@ -889,12 +904,15 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   
   // 2. Load tokens and connection state from localStorage
   lsLoad();
+  console.log('[init] After lsLoad - refreshToken:', !!S.refreshToken, 'accessToken:', !!S.accessToken, 'googleConnected:', S.googleConnected, 'folderId:', S.folderId);
   
   // 3. Load settings from server (any device) 
   const loaded = await serverLoad();
+  console.log('[init] After serverLoad - folderId:', S.folderId, 'name1:', S.name1);
   
   // 4. Re-apply localStorage on top (server doesn't store tokens/connection)
   lsLoad();
+  console.log('[init] After 2nd lsLoad - refreshToken:', !!S.refreshToken, 'googleConnected:', S.googleConnected);
   
   // 5. Populate form fields with loaded settings
   populateForm();
@@ -903,7 +921,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   if(hasOAuthCode) await handleCallback();
   
   // 7. Update Drive UI (may show Connected if tokens loaded from localStorage)
-  updateDriveUI();
+  await updateDriveUI();
   
   // 8. Auto-load gallery if already connected and folder selected
   if(S.folderId && (S.googleConnected || S.refreshToken)) loadGallery();
